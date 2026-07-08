@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Shield, Users, Globe, Award, TrendingUp, Heart } from 'lucide-react'
+import { Shield, Users, Globe, Award, TrendingUp } from 'lucide-react'
 
 const values = [
   { title: 'Security First', description: 'Enterprise-grade security measures to protect your investments and data.', icon: Shield },

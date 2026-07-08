@@ -20,11 +20,13 @@ import HistoryPage from './pages/dashboard/HistoryPage'
 import ProfilePage from './pages/dashboard/ProfilePage'
 import SupportPage from './pages/dashboard/SupportPage'
 
-function PublicLayout({ children }) {
+import { Outlet } from 'react-router-dom'
+
+function PublicLayout() {
   return (
     <>
       <Navbar />
-      {children}
+      <Outlet />
       <Footer />
     </>
   )
