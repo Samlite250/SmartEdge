@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, Lock, User, Phone, Globe, Gift, ArrowRight } from 'l
 import { motion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
+import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/ui/Toast'
 import api from '../lib/api'
 
@@ -13,6 +14,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [searchParams] = useSearchParams()
+  const { login } = useAuth()
   const [form, setForm] = useState({
     fullName: '', username: '', email: '', phone: '',
     country: 'International', referralCode: searchParams.get('ref') || '',
@@ -32,8 +34,15 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await api.post('/auth/register', form)
-      toast('Account created! Check your email to confirm.', 'success')
-      navigate('/login')
+      try {
+        const { data } = await api.post('/auth/login', { email: form.email, password: form.password })
+        login(data.user, data.token)
+        toast('Welcome to SmartEdge!', 'success')
+        navigate('/dashboard')
+      } catch {
+        toast('Account created! Please check your email to confirm, then sign in.', 'success')
+        navigate('/login')
+      }
     } catch (err) {
       toast(err.response?.data?.error || 'Registration failed', 'error')
     } finally {

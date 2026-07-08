@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Outlet } from 'react-router-dom'
 import { ToastProvider } from './components/ui/Toast'
 import { Navbar } from './components/layout/Navbar'
 import { Footer } from './components/layout/Footer'
@@ -9,7 +9,6 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import PlansPage from './pages/PlansPage'
-import MarketsPage from './pages/MarketsPage'
 import AboutPage from './pages/AboutPage'
 import FAQPage from './pages/FAQPage'
 import ContactPage from './pages/ContactPage'
@@ -19,8 +18,6 @@ import WalletPage from './pages/dashboard/WalletPage'
 import HistoryPage from './pages/dashboard/HistoryPage'
 import ProfilePage from './pages/dashboard/ProfilePage'
 import SupportPage from './pages/dashboard/SupportPage'
-
-import { Outlet } from 'react-router-dom'
 
 function PublicLayout() {
   return (
@@ -43,7 +40,6 @@ function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/plans" element={<PlansPage />} />
-          <Route path="/markets" element={<MarketsPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/contact" element={<ContactPage />} />

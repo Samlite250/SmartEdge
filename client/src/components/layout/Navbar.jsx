@@ -8,7 +8,6 @@ import { useAuth } from '../../hooks/useAuth'
 const links = [
   { name: 'Home', path: '/' },
   { name: 'Investment Plans', path: '/plans' },
-  { name: 'Markets', path: '/markets' },
   { name: 'About', path: '/about' },
   { name: 'FAQ', path: '/faq' },
   { name: 'Contact', path: '/contact' },
@@ -71,7 +70,7 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div className="lg:hidden border-t border-border/50 bg-white animate-fade-in">
+        <div className="lg:hidden border-t border-border/50 bg-card animate-fade-in">
           <div className="px-4 py-4 space-y-1">
             {links.map(link => (
               <Link
@@ -82,7 +81,7 @@ export function Navbar() {
                   'block px-4 py-3 rounded-xl text-sm font-medium transition-colors',
                   location.pathname === link.path
                     ? 'bg-primary/5 text-primary'
-                    : 'text-text-secondary hover:bg-background'
+                    : 'text-text-secondary hover:bg-surface-hover'
                 )}
               >
                 {link.name}

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, TrendingUp, Wallet, History, User, Headphones } from 'lucide-react'
+import { Home, TrendingUp, Wallet, History, User } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 const tabs = [
@@ -8,7 +8,6 @@ const tabs = [
   { name: 'Wallet', path: '/wallet', icon: Wallet },
   { name: 'History', path: '/history', icon: History },
   { name: 'Profile', path: '/profile', icon: User },
-  { name: 'Support', path: '/support', icon: Headphones },
 ]
 
 export function BottomNav() {

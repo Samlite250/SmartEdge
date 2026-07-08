@@ -4,14 +4,14 @@ import { TrendingUp, TrendingDown, Search } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 
 const coins = [
-  { name: 'Bitcoin', symbol: 'BTC', price: 67450.00, change: 2.45, icon: '₿', color: 'text-orange-500' },
-  { name: 'Ethereum', symbol: 'ETH', price: 3450.80, change: -1.23, icon: 'Ξ', color: 'text-blue-500' },
-  { name: 'Tether', symbol: 'USDT', price: 1.00, change: 0.01, icon: '₮', color: 'text-green-500' },
-  { name: 'Solana', symbol: 'SOL', price: 142.30, change: 5.67, icon: '◎', color: 'text-purple-500' },
-  { name: 'Cardano', symbol: 'ADA', price: 0.45, change: -0.89, icon: '₳', color: 'text-blue-600' },
-  { name: 'Polkadot', symbol: 'DOT', price: 7.82, change: 3.21, icon: '●', color: 'text-pink-500' },
-  { name: 'Chainlink', symbol: 'LINK', price: 14.56, change: -2.34, icon: '⬡', color: 'text-blue-400' },
-  { name: 'Avalanche', symbol: 'AVAX', price: 35.20, change: 1.45, icon: '▲', color: 'text-red-500' },
+  { name: 'Bitcoin', symbol: 'BTC', price: 67450.00, change: 2.45, icon: '₿', color: 'text-accent' },
+  { name: 'Ethereum', symbol: 'ETH', price: 3450.80, change: -1.23, icon: 'Ξ', color: 'text-primary' },
+  { name: 'Tether', symbol: 'USDT', price: 1.00, change: 0.01, icon: '₮', color: 'text-success' },
+  { name: 'Solana', symbol: 'SOL', price: 142.30, change: 5.67, icon: '◎', color: 'text-info' },
+  { name: 'Cardano', symbol: 'ADA', price: 0.45, change: -0.89, icon: '₳', color: 'text-primary-dark' },
+  { name: 'Polkadot', symbol: 'DOT', price: 7.82, change: 3.21, icon: '●', color: 'text-accent-light' },
+  { name: 'Chainlink', symbol: 'LINK', price: 14.56, change: -2.34, icon: '⬡', color: 'text-primary-light' },
+  { name: 'Avalanche', symbol: 'AVAX', price: 35.20, change: 1.45, icon: '▲', color: 'text-danger' },
 ]
 
 function formatPrice(price) {

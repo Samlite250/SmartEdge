@@ -1,24 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0F9D58;
-  --color-primary-dark: #0B8043;
-  --color-primary-light: #1DB954;
-  --color-secondary: #1F2A44;
-  --color-secondary-light: #2A3A5C;
+  --color-primary: #4285F4;
+  --color-primary-dark: #3367D6;
+  --color-primary-light: #5A9AFF;
+  --color-secondary: #0F9D58;
+  --color-secondary-dark: #0B8043;
+  --color-secondary-light: #1DB954;
   --color-accent: #D4A017;
   --color-accent-light: #F0B830;
-  --color-background: #F8FAFC;
+  --color-background: #F4F7FC;
   --color-card: #FFFFFF;
-  --color-border: #E5E7EB;
-  --color-border-light: #F3F4F6;
-  --color-text-primary: #111827;
-  --color-text-secondary: #6B7280;
-  --color-text-muted: #9CA3AF;
-  --color-success: #16A34A;
+  --color-border: #DEE3ED;
+  --color-border-light: #E8EDF5;
+  --color-text-primary: #1A1D2A;
+  --color-text-secondary: #5A6075;
+  --color-text-muted: #8E94A6;
+  --color-success: #0F9D58;
   --color-warning: #F59E0B;
   --color-danger: #DC2626;
-  --color-info: #2563EB;
+  --color-info: #4285F4;
+  --color-surface: #F0F5FF;
+  --color-surface-hover: #E5EDFA;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Inter', system-ui, -apple-system, sans-serif;
   --radius-sm: 8px;
@@ -31,12 +34,13 @@
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-card-hover: 0 10px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.05);
   --shadow-floating: 0 20px 50px rgba(0, 0, 0, 0.1);
-  --shadow-button: 0 4px 14px rgba(15, 157, 88, 0.3);
-  --shadow-button-hover: 0 6px 20px rgba(15, 157, 88, 0.4);
+  --shadow-button: 0 4px 14px rgba(66, 133, 244, 0.35);
+  --shadow-button-hover: 0 6px 20px rgba(66, 133, 244, 0.45);
   --animate-fade-in: fade-in 0.5s ease-out;
   --animate-slide-up: slide-up 0.5s ease-out;
   --animate-scale-in: scale-in 0.3s ease-out;
   --animate-float: float 3s ease-in-out infinite;
+  --animate-ticker: ticker 30s linear infinite;
 }
 
 @layer base {
@@ -108,19 +112,23 @@
   }
 
   .card-gradient {
-    background: linear-gradient(135deg, #0F9D58 0%, #0B8043 100%);
+    background: linear-gradient(135deg, #4285F4 0%, #3367D6 100%);
   }
 
   .card-gradient-hover {
-    background: linear-gradient(135deg, #0B8043 0%, #0F9D58 100%);
+    background: linear-gradient(135deg, #3367D6 0%, #4285F4 100%);
   }
 
   .accent-gradient {
     background: linear-gradient(135deg, #D4A017 0%, #F0B830 100%);
   }
 
+  .green-gradient {
+    background: linear-gradient(135deg, #0F9D58 0%, #0B8043 100%);
+  }
+
   .gradient-text {
-    background: linear-gradient(135deg, #0F9D58 0%, #1DB954 50%, #D4A017 100%);
+    background: linear-gradient(135deg, #4285F4 0%, #0F9D58 50%, #D4A017 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -128,13 +136,13 @@
 
   .bg-grid {
     background-image:
-      linear-gradient(rgba(15, 157, 88, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(15, 157, 88, 0.04) 1px, transparent 1px);
+      linear-gradient(rgba(66, 133, 244, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(66, 133, 244, 0.05) 1px, transparent 1px);
     background-size: 60px 60px;
   }
 
   .bg-dots {
-    background-image: radial-gradient(rgba(15, 157, 88, 0.08) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(66, 133, 244, 0.08) 1px, transparent 1px);
     background-size: 24px 24px;
   }
 
@@ -169,6 +177,18 @@
 }
 
 @layer utilities {
+  .scrolling-text {
+    animation: ticker 30s linear infinite;
+  }
+
+  .scrolling-text:hover {
+    animation-play-state: paused;
+  }
+
+  .glow-card {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
@@ -197,6 +217,21 @@
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
+}
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(66, 133, 244, 0.15); }
+  50% { box-shadow: 0 0 40px rgba(66, 133, 244, 0.3); }
 }
 
 @media (max-width: 768px) {
