@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
-const { generateDepositRef } = require('../utils/helpers');
+const { generateDepositRef, generateReferralCode } = require('../utils/helpers');
 
 router.post('/register', async (req, res) => {
   try {
@@ -27,7 +27,7 @@ router.post('/register', async (req, res) => {
           (country === 'Uganda' ? 'UGX' : country === 'Kenya' ? 'KES' : country === 'Rwanda' ? 'RWF' : 'BIF') 
           : 'USD',
         role: 'user',
-        referral_code: generateDepositRef().slice(0, 10),
+        referral_code: generateReferralCode(),
       });
 
       if (profileError) return res.status(400).json({ error: profileError.message });

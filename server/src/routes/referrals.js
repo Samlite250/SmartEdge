@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
+const config = require('../config');
 const { authenticate } = require('../middleware/auth');
 
 router.get('/', authenticate, async (req, res) => {
@@ -25,7 +26,7 @@ router.get('/', authenticate, async (req, res) => {
       referralCode: profile?.referral_code,
       referrals: referrals || [],
       totalBonus,
-      referralLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/register?ref=${profile?.referral_code}`,
+      referralLink: `${config.frontendUrl}/register?ref=${profile?.referral_code}`,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch referrals' });

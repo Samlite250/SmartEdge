@@ -3,6 +3,22 @@ const router = express.Router();
 const supabase = require('../config/database');
 const { authenticate, adminOnly } = require('../middleware/auth');
 
+// Dev-only: promote user to admin (remove in production)
+router.post('/dev-promote', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ role: 'admin' })
+      .eq('id', req.user.id)
+      .select()
+      .single();
+    if (error) return res.status(400).json({ error: error.message });
+    res.json({ message: 'Promoted to admin', profile: data });
+  } catch (error) {
+    res.status(500).json({ error: 'Promotion failed' });
+  }
+});
+
 router.use(authenticate, adminOnly);
 
 router.get('/dashboard', async (req, res) => {

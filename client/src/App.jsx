@@ -1,8 +1,9 @@
-import { Routes, Route, Outlet } from 'react-router-dom'
+import { Routes, Route, Outlet, Link, Navigate, useLocation } from 'react-router-dom'
 import { ToastProvider } from './components/ui/Toast'
 import { Navbar } from './components/layout/Navbar'
 import { Footer } from './components/layout/Footer'
 import { DashboardLayout } from './components/layout/DashboardLayout'
+import { useAuth } from './hooks/useAuth'
 
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
@@ -18,6 +19,47 @@ import WalletPage from './pages/dashboard/WalletPage'
 import HistoryPage from './pages/dashboard/HistoryPage'
 import ProfilePage from './pages/dashboard/ProfilePage'
 import SupportPage from './pages/dashboard/SupportPage'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminDeposits from './pages/admin/AdminDeposits'
+import AdminWithdrawals from './pages/admin/AdminWithdrawals'
+
+const adminNavItems = [
+  { label: 'Dashboard', path: '/admin' },
+  { label: 'Users', path: '/admin/users' },
+  { label: 'Deposits', path: '/admin/deposits' },
+  { label: 'Withdrawals', path: '/admin/withdrawals' },
+]
+
+function AdminLayout() {
+  const { isAdmin, user } = useAuth()
+  const location = useLocation()
+
+  if (!isAdmin) return <Navigate to="/dashboard" replace />
+
+  return (
+    <div className="min-h-screen bg-background pb-20 lg:pb-0">
+      <header className="sticky top-0 z-40 glass border-b border-border/50">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-8 rounded-lg card-gradient flex items-center justify-center">
+              <span className="text-white font-bold text-sm">SE</span>
+            </div>
+            <div className="hidden sm:flex items-center gap-1">
+              {adminNavItems.map(item => (
+                <Link key={item.path} to={item.path}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${location.pathname === item.path ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface'}`}
+                >{item.label}</Link>
+              ))}
+            </div>
+          </div>
+          <Link to="/dashboard" className="text-sm text-text-muted hover:text-text-primary">Back to Dashboard</Link>
+        </div>
+      </header>
+      <main className="max-w-7xl mx-auto px-4 py-6"><Outlet /></main>
+    </div>
+  )
+}
 
 function PublicLayout() {
   return (
@@ -52,6 +94,13 @@ function App() {
           <Route path="history" element={<HistoryPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="support" element={<SupportPage />} />
+        </Route>
+
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="deposits" element={<AdminDeposits />} />
+          <Route path="withdrawals" element={<AdminWithdrawals />} />
         </Route>
       </Routes>
     </ToastProvider>

@@ -1,9 +1,9 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Clock, ArrowDownCircle, ArrowUpCircle, RefreshCw, Gift } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
-import { getStatusColor } from '../../lib/utils'
-
-const transactions = []
+import { walletApi } from '../../services/api'
+import { formatDateTime, formatCurrency, getStatusColor } from '../../lib/utils'
 
 const typeIcons = {
   deposit: ArrowDownCircle,
@@ -11,9 +11,29 @@ const typeIcons = {
   investment: RefreshCw,
   referral_bonus: Gift,
   daily_return: RefreshCw,
+  transfer: RefreshCw,
 }
 
 export default function HistoryPage() {
+  const [transactions, setTransactions] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    walletApi.getTransactions(1, 100)
+      .then(res => setTransactions(res.data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div><div className="h-8 w-48 bg-border/50 rounded-lg animate-pulse mb-2" /><div className="h-5 w-64 bg-border/50 rounded-lg animate-pulse" /></div>
+        {[1, 2, 3, 4, 5].map(i => <Card key={i}><CardContent><div className="h-12 bg-border/50 rounded-lg animate-pulse" /></CardContent></Card>)}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -36,26 +56,20 @@ export default function HistoryPage() {
           {transactions.map((tx, i) => {
             const Icon = typeIcons[tx.type] || RefreshCw
             return (
-              <motion.div
-                key={tx.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-              >
+              <motion.div key={tx.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
                 <Card>
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getStatusColor(tx.status)}`}>
-                      <Icon className="w-5 h-5" />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'deposit' ? 'accent-gradient' : tx.type === 'withdrawal' ? 'card-gradient' : tx.type === 'daily_return' ? 'green-gradient' : 'bg-surface'}`}>
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-text-primary capitalize">{tx.type.replace(/_/g, ' ')}</p>
-                      <p className="text-xs text-text-muted">{new Date(tx.created_at).toLocaleDateString()}</p>
+                      <p className="font-medium text-text-primary capitalize">{tx.type?.replace(/_/g, ' ')}</p>
+                      <p className="text-xs text-text-muted">{formatDateTime(tx.created_at)}</p>
+                      {tx.description && <p className="text-xs text-text-muted mt-0.5">{tx.description}</p>}
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-text-primary">${Number(tx.amount).toLocaleString()}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(tx.status)}`}>
-                        {tx.status}
-                      </span>
+                      <p className="font-semibold text-text-primary">{formatCurrency(tx.amount)}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(tx.status)}`}>{tx.status}</span>
                     </div>
                   </div>
                 </Card>

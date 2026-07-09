@@ -15,6 +15,8 @@ const adminRoutes = require('./routes/admin');
 const marketRoutes = require('./routes/markets');
 const announcementRoutes = require('./routes/announcements');
 const referralRoutes = require('./routes/referrals');
+const cron = require('node-cron');
+const { processDailyReturns } = require('./services/dailyReturns');
 
 const app = express();
 
@@ -56,8 +58,17 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(config.port, () => {
-  console.log(`Smart Edge API running on port ${config.port}`);
-});
+const isVercel = process.env.VERCEL === '1';
+
+if (!isVercel) {
+  cron.schedule('0 0 * * *', () => {
+    console.log('[Cron] Running daily returns...');
+    processDailyReturns();
+  });
+
+  app.listen(config.port, () => {
+    console.log(`Smart Edge API running on port ${config.port}`);
+  });
+}
 
 module.exports = app;

@@ -9,6 +9,12 @@ const generateRef = (prefix = 'SE') => {
 const generateDepositRef = () => generateRef('DEP');
 const generateWithdrawRef = () => generateRef('WTH');
 const generateTransactionRef = () => generateRef('TXN');
+const generateReferralCode = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 8; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+  return code;
+};
 
 const calculateDailyReturn = (amount, percentage) => {
   return (amount * percentage) / 100;
@@ -55,6 +61,7 @@ module.exports = {
   generateDepositRef,
   generateWithdrawRef,
   generateTransactionRef,
+  generateReferralCode,
   calculateDailyReturn,
   calculateTotalReturn,
   calculateGrowth,
