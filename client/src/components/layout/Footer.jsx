@@ -19,11 +19,16 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
+            <h3 className="font-semibold mb-4 text-white">Quick Links</h3>
             <div className="space-y-3">
-              {['Investment Plans', 'About', 'FAQ', 'Contact'].map(item => (
-                <Link key={item} to={`/${item.toLowerCase().replace(' ', '-')}`} className="block text-white/60 hover:text-white text-sm transition-colors">
-                  {item}
+              {[
+                { name: 'Investment Plans', path: '/plans' },
+                { name: 'About', path: '/about' },
+                { name: 'FAQ', path: '/faq' },
+                { name: 'Contact', path: '/contact' }
+              ].map(item => (
+                <Link key={item.name} to={item.path} className="block text-white/60 hover:text-white text-sm transition-colors">
+                  {item.name}
                 </Link>
               ))}
             </div>

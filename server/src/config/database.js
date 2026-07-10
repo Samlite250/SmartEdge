@@ -9,12 +9,12 @@ const db = {
   referrals: [],
   user_investments: [],
   investment_plans: [
-    { id: 'plan_1', name: 'Starter Plan', description: 'Perfect for beginners starting their investment journey', min_investment: 10, max_investment: 99, daily_return: 0.50, duration: 30, total_return: 15.00, risk_level: 'low', status: 'active', features: ['Daily returns','Capital preservation','Instant withdrawals'], coin_id: 'coin_1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 'plan_2', name: 'Growth Plan', description: 'Balanced growth with moderate returns', min_investment: 100, max_investment: 999, daily_return: 0.80, duration: 45, total_return: 36.00, risk_level: 'medium', status: 'active', features: ['Higher daily returns','Compound interest','Priority support'], coin_id: 'coin_2', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 'plan_3', name: 'Premium Plan', description: 'Maximum returns for serious investors', min_investment: 1000, max_investment: 9999, daily_return: 1.20, duration: 60, total_return: 72.00, risk_level: 'medium', status: 'active', features: ['Premium daily returns','VIP support','Exclusive insights','Early withdrawals'], coin_id: 'coin_4', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 'plan_4', name: 'Elite Plan', description: 'The ultimate investment experience', min_investment: 10000, max_investment: 100000, daily_return: 2.00, duration: 90, total_return: 180.00, risk_level: 'high', status: 'active', features: ['Elite daily returns','Dedicated account manager','Custom strategies','Instant priority withdrawals','Quarterly bonuses'], coin_id: 'coin_1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 'plan_5', name: 'Staking Plan', description: 'Earn passive income through staking', min_investment: 50, max_investment: 5000, daily_return: 0.35, duration: 30, total_return: 10.50, risk_level: 'low', status: 'active', features: ['Staking rewards','Low risk','Flexible period','Auto-compound'], coin_id: 'coin_5', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 'plan_6', name: 'Gold Plan', description: 'Premium gold-tier investment opportunity', min_investment: 500, max_investment: 50000, daily_return: 1.50, duration: 60, total_return: 90.00, risk_level: 'medium', status: 'active', features: ['Gold tier returns','Market analysis','Dedicated support','Flexible withdrawal'], coin_id: 'coin_7', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'plan_1', name: 'Starter Plan', description: 'Perfect for beginners starting their investment journey', min_investment: 10, max_investment: 99, daily_return: 0.50, duration: 30, total_return: 15.00, risk_level: 'low', status: 'active', features: ['Daily returns', 'Capital preservation', 'Instant withdrawals'], coin_id: 'coin_1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'plan_2', name: 'Growth Plan', description: 'Balanced growth with moderate returns', min_investment: 100, max_investment: 999, daily_return: 0.80, duration: 45, total_return: 36.00, risk_level: 'medium', status: 'active', features: ['Higher daily returns', 'Compound interest', 'Priority support'], coin_id: 'coin_2', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'plan_3', name: 'Premium Plan', description: 'Maximum returns for serious investors', min_investment: 1000, max_investment: 9999, daily_return: 1.20, duration: 60, total_return: 72.00, risk_level: 'medium', status: 'active', features: ['Premium daily returns', 'VIP support', 'Exclusive insights', 'Early withdrawals'], coin_id: 'coin_4', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'plan_4', name: 'Elite Plan', description: 'The ultimate investment experience', min_investment: 10000, max_investment: 100000, daily_return: 2.00, duration: 90, total_return: 180.00, risk_level: 'high', status: 'active', features: ['Elite daily returns', 'Dedicated account manager', 'Custom strategies', 'Instant priority withdrawals', 'Quarterly bonuses'], coin_id: 'coin_1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'plan_5', name: 'Staking Plan', description: 'Earn passive income through staking', min_investment: 50, max_investment: 5000, daily_return: 0.35, duration: 30, total_return: 10.50, risk_level: 'low', status: 'active', features: ['Staking rewards', 'Low risk', 'Flexible period', 'Auto-compound'], coin_id: 'coin_5', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'plan_6', name: 'Gold Plan', description: 'Premium gold-tier investment opportunity', min_investment: 500, max_investment: 50000, daily_return: 1.50, duration: 60, total_return: 90.00, risk_level: 'medium', status: 'active', features: ['Gold tier returns', 'Market analysis', 'Dedicated support', 'Flexible withdrawal'], coin_id: 'coin_7', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   ],
   cryptocurrencies: [
     { id: 'coin_1', name: 'Bitcoin', symbol: 'BTC', current_price: 67432.10, price_change_24h: 2.45, market_cap: 1320000000000, volume_24h: 45000000000, logo_url: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png', status: 'active', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
@@ -279,7 +279,7 @@ const mockSupabase = {
     async updateUser() { return { data: { user: {} }, error: null } },
 
     onAuthStateChange() {
-      return { data: { subscription: { unsubscribe: () => {} } } };
+      return { data: { subscription: { unsubscribe: () => { } } } };
     },
   },
 
@@ -299,6 +299,6 @@ const mockSupabase = {
   },
 };
 
-const useMock = !config.supabase.url || config.supabase.url.includes('your-project');
+const useMock = process.env.USE_MOCK === 'true' || !config.supabase.url || config.supabase.url.includes('your-project');
 
 module.exports = useMock ? mockSupabase : require('@supabase/supabase-js').createClient(config.supabase.url, config.supabase.serviceKey);
