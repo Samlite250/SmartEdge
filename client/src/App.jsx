@@ -23,6 +23,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminDeposits from './pages/admin/AdminDeposits'
 import AdminWithdrawals from './pages/admin/AdminWithdrawals'
+import AdminSetupPage from './pages/AdminSetupPage'
 
 const adminNavItems = [
   { label: 'Dashboard', path: '/admin' },
@@ -78,6 +79,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/admin-setup" element={<AdminSetupPage />} />
 
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />

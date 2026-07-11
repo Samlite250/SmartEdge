@@ -2,8 +2,37 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
 const { authenticate, adminOnly } = require('../middleware/auth');
+const config = require('../config');
 
-// Dev-only: promote user to admin (remove in production)
+// Setup-admin: Promote any user to admin by email using a secret key.
+// This endpoint is NOT protected by adminOnly, so it can bootstrap the first admin.
+// Usage: POST /admin/setup-admin  { email, secret }
+router.post('/setup-admin', async (req, res) => {
+  try {
+    const { email, secret } = req.body;
+    const expectedSecret = process.env.SETUP_SECRET || 'smartedge-setup-2025';
+    if (secret !== expectedSecret) {
+      return res.status(403).json({ error: 'Invalid setup secret' });
+    }
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ role: 'admin' })
+      .eq('email', email)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: error?.message || 'User not found with that email' });
+    }
+    res.json({ message: `User ${email} has been promoted to admin`, profile: data });
+  } catch (error) {
+    res.status(500).json({ error: 'Setup failed' });
+  }
+});
+
+// Dev-only: promote currently logged-in user to admin
 router.post('/dev-promote', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase

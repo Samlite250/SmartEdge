@@ -54,6 +54,7 @@ export const announcementApi = {
 }
 
 export const adminApi = {
+  setupAdmin: (email, secret) => api.post('/admin/setup-admin', { email, secret }).then(r => r.data),
   devPromote: () => api.post('/admin/dev-promote').then(r => r.data),
   getDashboard: () => api.get('/admin/dashboard').then(r => r.data),
   getUsers: () => api.get('/admin/users').then(r => r.data),

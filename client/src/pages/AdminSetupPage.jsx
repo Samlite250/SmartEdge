@@ -1,0 +1,97 @@
+import { useState } from 'react'
+import { ShieldCheck, ArrowRight, Lock, Mail } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
+import { useToast } from '../components/ui/Toast'
+import { useAuth } from '../hooks/useAuth'
+import api from '../lib/api'
+
+export default function AdminSetupPage() {
+    const { user, updateUser } = useAuth()
+    const toast = useToast()
+    const navigate = useNavigate()
+    const [form, setForm] = useState({
+        email: user?.email || '',
+        secret: '',
+    })
+    const [loading, setLoading] = useState(false)
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        if (!form.email || !form.secret) return toast('All fields are required', 'warning')
+
+        setLoading(true)
+        try {
+            const { data } = await api.post('/admin/setup-admin', form)
+            toast(data.message || 'Promoted to admin! Please log out and log in again.', 'success')
+            // Update local state if the promoted user is the currently logged in user
+            if (user?.email === form.email) {
+                updateUser({ role: 'admin' })
+                setTimeout(() => navigate('/admin'), 1500)
+            }
+        } catch (err) {
+            toast(err.response?.data?.error || 'Promotion failed. Check your secret key.', 'error')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-6">
+            <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full max-w-md"
+            >
+                {/* Card */}
+                <div className="bg-card border border-border rounded-2xl p-8 shadow-xl">
+                    <div className="flex flex-col items-center mb-8 text-center">
+                        <div className="w-16 h-16 rounded-2xl card-gradient flex items-center justify-center mb-4 shadow-lg">
+                            <ShieldCheck className="w-8 h-8 text-white" />
+                        </div>
+                        <h1 className="text-2xl font-bold text-text-primary">Admin Setup</h1>
+                        <p className="text-text-secondary text-sm mt-1">
+                            Promote a user account to <span className="text-primary font-semibold">Admin</span> using the setup secret key.
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <Input
+                            label="User Email"
+                            type="email"
+                            placeholder="samlite250@gmail.com"
+                            icon={Mail}
+                            value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            required
+                        />
+                        <Input
+                            label="Setup Secret Key"
+                            type="password"
+                            placeholder="Enter the setup secret"
+                            icon={Lock}
+                            value={form.secret}
+                            onChange={(e) => setForm({ ...form, secret: e.target.value })}
+                            required
+                        />
+
+                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600">
+                            <strong>Default secret:</strong> <code className="font-mono">smartedge-setup-2025</code><br />
+                            Set <code>SETUP_SECRET</code> env var on your server to change it.
+                        </div>
+
+                        <Button type="submit" className="w-full" loading={loading}>
+                            Promote to Admin <ArrowRight className="w-4 h-4" />
+                        </Button>
+                    </form>
+
+                    <p className="text-center text-xs text-text-muted mt-6">
+                        <Link to="/login" className="text-primary hover:underline">← Back to Login</Link>
+                    </p>
+                </div>
+            </motion.div>
+        </div>
+    )
+}
