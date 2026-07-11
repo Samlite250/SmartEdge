@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft, Gift, DollarSign, Copy, Share2, BadgeCheck, Coins, BarChart3, ExternalLink, Settings, Headphones, Activity } from 'lucide-react'
+import { Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft, Gift, DollarSign, Copy, Share2, BadgeCheck, Coins, BarChart3, ExternalLink, Settings, Headphones, Activity, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { useAuth } from '../../hooks/useAuth'
 import { Link } from 'react-router-dom'
@@ -136,7 +136,7 @@ export default function DashboardHome() {
   return (
     <div className="space-y-8 pb-8">
       {/* Hero Section */}
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 glass p-6 rounded-3xl border border-white/5 relative overflow-hidden">
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 bg-[#131A28] p-6 rounded-3xl border border-white/5 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-32 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
         <div className="relative z-10 space-y-2">
           <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
@@ -146,14 +146,6 @@ export default function DashboardHome() {
             Your portfolio is up <span className="text-emerald-400 font-semibold">+4.5%</span> this week. Keep it growing.
           </motion.p>
         </div>
-        <div className="relative z-10 flex gap-3">
-          <Link to="/invest" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-sm hover:shadow-lg hover:shadow-blue-500/25 transition-all outline-none focus:ring-2 focus:ring-blue-500/50">
-            <TrendingUp className="w-4 h-4" /> Invest
-          </Link>
-          <Link to="/wallet" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-semibold text-sm hover:bg-white/10 transition-all backdrop-blur-md">
-            <Wallet className="w-4 h-4" /> Deposit
-          </Link>
-        </div>
       </div>
 
       {/* Stats Grid */}
@@ -162,7 +154,7 @@ export default function DashboardHome() {
           const Icon = stat.icon
           return (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-              <div className="relative overflow-hidden group rounded-3xl glass border border-white/5 p-5 hover:border-white/10 transition-colors">
+              <div className="relative overflow-hidden group rounded-3xl bg-[#131A28] border border-white/5 p-5 hover:border-white/10 transition-colors">
                 <div className={`absolute top-0 right-0 w-32 h-32 blur-3xl opacity-20 rounded-full transition-opacity group-hover:opacity-40 ${stat.gradient}`} />
                 <div className="flex justify-between items-start mb-4">
                   <div className={`w-10 h-10 rounded-xl ${stat.gradient} flex items-center justify-center shadow-lg ${stat.shadow} group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
@@ -177,11 +169,21 @@ export default function DashboardHome() {
         })}
       </div>
 
+      {/* Quick Wallet Actions */}
+      <div className="grid grid-cols-2 gap-4">
+        <Link to="/wallet" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl bg-primary text-white hover:bg-primary-dark shadow-button transition-all duration-200">
+          <ArrowDownCircle className="w-5 h-5" /> Deposit
+        </Link>
+        <Link to="/wallet" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200">
+          <ArrowUpCircle className="w-5 h-5" /> Withdraw
+        </Link>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Main Chart */}
-          <div className="glass rounded-3xl border border-white/5 p-6 relative overflow-hidden">
+          <div className="bg-[#131A28] rounded-3xl border border-white/5 p-6 relative overflow-hidden">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-bold text-text-primary">Portfolio Performance</h3>
@@ -215,7 +217,7 @@ export default function DashboardHome() {
 
           {/* Crypto Holdings & Activity */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass rounded-3xl border border-white/5 p-6">
+            <div className="bg-[#131A28] rounded-3xl border border-white/5 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-text-primary">Your Crypto</h3>
                 <Coins className="w-5 h-5 text-indigo-400" />
@@ -246,7 +248,7 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            <div className="glass rounded-3xl border border-white/5 p-6">
+            <div className="bg-[#131A28] rounded-3xl border border-white/5 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-text-primary">Recent Activity</h3>
                 <Link to="/history" className="text-xs text-indigo-400 hover:text-indigo-300 font-medium">View All</Link>
@@ -281,7 +283,7 @@ export default function DashboardHome() {
         {/* Right Column */}
         <div className="space-y-6">
           {/* Market Watch (Marquee-like or List) */}
-          <div className="glass rounded-3xl border border-white/5 p-6">
+          <div className="bg-[#131A28] rounded-3xl border border-white/5 p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-text-primary">Market Watch</h3>
               <ExternalLink className="w-4 h-4 text-text-muted" />
@@ -322,7 +324,7 @@ export default function DashboardHome() {
           </div>
 
           {/* Quick Actions List */}
-          <div className="glass rounded-3xl border border-white/5 p-6">
+          <div className="bg-[#131A28] rounded-3xl border border-white/5 p-6">
             <h3 className="text-lg font-bold text-text-primary mb-4">Quick Actions</h3>
             <div className="space-y-2">
               <Link to="/profile" className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all group border border-transparent hover:border-white/5">
