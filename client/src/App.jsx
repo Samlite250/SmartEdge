@@ -23,38 +23,54 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminDeposits from './pages/admin/AdminDeposits'
 import AdminWithdrawals from './pages/admin/AdminWithdrawals'
+import AdminInvestments from './pages/admin/AdminInvestments'
+import AdminTransactions from './pages/admin/AdminTransactions'
+import AdminReferrals from './pages/admin/AdminReferrals'
+import AdminSettings from './pages/admin/AdminSettings'
 import AdminSetupPage from './pages/AdminSetupPage'
 
 const adminNavItems = [
-  { label: 'Dashboard', path: '/admin' },
+  { label: 'Overview', path: '/admin' },
   { label: 'Users', path: '/admin/users' },
   { label: 'Deposits', path: '/admin/deposits' },
   { label: 'Withdrawals', path: '/admin/withdrawals' },
+  { label: 'Investments', path: '/admin/investments' },
+  { label: 'Transactions', path: '/admin/transactions' },
+  { label: 'Referrals', path: '/admin/referrals' },
+  { label: 'Settings', path: '/admin/settings' },
 ]
 
 function AdminLayout() {
-  const { isAdmin, user } = useAuth()
+  const { isAdmin, logout } = useAuth()
   const location = useLocation()
 
   if (!isAdmin) return <Navigate to="/dashboard" replace />
 
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-0">
+    <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 glass border-b border-border/50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-8 h-8 rounded-lg card-gradient flex items-center justify-center">
+          <div className="flex items-center gap-3">
+            <Link to="/admin" className="w-8 h-8 rounded-lg card-gradient flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-sm">SE</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-1">
-              {adminNavItems.map(item => (
-                <Link key={item.path} to={item.path}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${location.pathname === item.path ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface'}`}
-                >{item.label}</Link>
-              ))}
-            </div>
+            </Link>
+            <span className="hidden sm:block text-xs font-semibold text-primary uppercase tracking-wider">Admin Panel</span>
           </div>
-          <Link to="/dashboard" className="text-sm text-text-muted hover:text-text-primary">Back to Dashboard</Link>
+          {/* Scrollable nav tabs on mobile */}
+          <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-none mx-4 flex-1">
+            {adminNavItems.map(item => (
+              <Link key={item.path} to={item.path}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${location.pathname === item.path
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface'
+                  }`}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-2">
+            <Link to="/dashboard" className="text-xs text-text-muted hover:text-text-primary whitespace-nowrap">← Dashboard</Link>
+          </div>
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 py-6"><Outlet /></main>
@@ -103,6 +119,10 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="deposits" element={<AdminDeposits />} />
           <Route path="withdrawals" element={<AdminWithdrawals />} />
+          <Route path="investments" element={<AdminInvestments />} />
+          <Route path="transactions" element={<AdminTransactions />} />
+          <Route path="referrals" element={<AdminReferrals />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Routes>
     </ToastProvider>
