@@ -110,6 +110,11 @@ export default function InvestPage() {
                         ))}
                       </div>
                     )}
+                    <div className="pt-4 mt-auto">
+                      <Button className="w-full" variant={isSelected ? "primary" : "outline"} onClick={(e) => { e.stopPropagation(); setSelected(plan); setAmount(String(plan.min_investment)) }}>
+                        Invest in {plan.name}
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

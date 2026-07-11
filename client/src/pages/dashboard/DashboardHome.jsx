@@ -23,6 +23,14 @@ const holdings = [
   { name: 'Tether', symbol: 'USDT', amount: 250.00, logo: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
 ]
 
+const countryFlags = {
+  'Uganda': '🇺🇬',
+  'Kenya': '🇰🇪',
+  'Rwanda': '🇷🇼',
+  'Burundi': '🇧🇮',
+  'International': '🌐'
+}
+
 const marketCoins = [
   { name: 'Bitcoin', symbol: 'BTC', price: '$67,432.10', change: '+2.4%', up: true, logo: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png' },
   { name: 'Ethereum', symbol: 'ETH', price: '$3,521.80', change: '+1.8%', up: true, logo: 'https://cryptologos.cc/logos/ethereum-eth-logo.png' },
@@ -88,10 +96,10 @@ export default function DashboardHome() {
   }, 0)
 
   const stats = [
-    { label: 'Balance', value: `$${Number(balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Wallet, gradient: 'bg-gradient-to-br from-blue-600 to-indigo-600', shadow: 'shadow-blue-500/30' },
-    { label: 'Referral Earnings', value: `$${Number(referralBonus).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Gift, gradient: 'bg-gradient-to-br from-emerald-500 to-green-600', shadow: 'shadow-emerald-500/30' },
-    { label: 'Active Plans', value: String(activeInvestments), icon: Activity, gradient: 'bg-gradient-to-br from-purple-500 to-fuchsia-600', shadow: 'shadow-purple-500/30' },
-    { label: 'Total Profit', value: `+$${Number(totalProfit).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: TrendingUp, gradient: 'bg-gradient-to-br from-orange-500 to-red-600', shadow: 'shadow-orange-500/30' },
+    { label: 'Balance', value: `$${Number(balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Wallet, bgColor: 'bg-[#4285F4]' },
+    { label: 'Referral Earnings', value: `$${Number(referralBonus).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Gift, bgColor: 'bg-[#0F9D58]' },
+    { label: 'Active Plans', value: String(activeInvestments), icon: Activity, bgColor: 'bg-[#F4B400]' },
+    { label: 'Total Profit', value: `+$${Number(totalProfit).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: TrendingUp, bgColor: 'bg-[#DB4437]' },
   ]
 
   const transactions = data?.recentTransactions ?? []
@@ -139,8 +147,8 @@ export default function DashboardHome() {
       <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 bg-[#131A28] p-6 rounded-3xl border border-white/5 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-32 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
         <div className="relative z-10 space-y-2">
-          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
-            Welcome back, {user?.full_name?.split(' ')[0] || 'User'}
+          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent flex items-center gap-3">
+            Welcome back, {user?.full_name?.split(' ')[0] || 'User'} <span className="text-3xl">{countryFlags[user?.country] || '🌐'}</span>
           </motion.h1>
           <motion.p initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="text-text-secondary text-sm md:text-base">
             Your portfolio is up <span className="text-emerald-400 font-semibold">+4.5%</span> this week. Keep it growing.
@@ -154,15 +162,15 @@ export default function DashboardHome() {
           const Icon = stat.icon
           return (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-              <div className="relative overflow-hidden group rounded-3xl bg-[#131A28] border border-white/5 p-5 hover:border-white/10 transition-colors">
-                <div className={`absolute top-0 right-0 w-32 h-32 blur-3xl opacity-20 rounded-full transition-opacity group-hover:opacity-40 ${stat.gradient}`} />
+              <div className={`relative overflow-hidden group rounded-3xl ${stat.bgColor} border border-white/5 p-5 hover:brightness-110 transition-all`}>
+                <div className="absolute top-0 right-0 w-32 h-32 blur-3xl opacity-20 bg-white rounded-full transition-opacity group-hover:opacity-40" />
                 <div className="flex justify-between items-start mb-4">
-                  <div className={`w-10 h-10 rounded-xl ${stat.gradient} flex items-center justify-center shadow-lg ${stat.shadow} group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                 </div>
-                <p className="text-xs md:text-sm text-text-muted font-medium mb-1">{stat.label}</p>
-                <p className="text-xl md:text-2xl font-bold text-text-primary tracking-tight">{stat.value}</p>
+                <p className="text-xs md:text-sm text-white/90 font-medium mb-1">{stat.label}</p>
+                <p className="text-xl md:text-2xl font-bold text-white tracking-tight">{stat.value}</p>
               </div>
             </motion.div>
           )
