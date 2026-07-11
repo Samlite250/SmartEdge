@@ -79,6 +79,7 @@ export default function DashboardHome() {
   const todayEarnings = data?.todayEarnings ?? 0
   const referralBonus = data?.referrals?.reduce((sum, r) => sum + Number(r.bonus || 0), 0) ?? 0
   const referralCount = data?.referrals?.length ?? 0
+  const totalProfit = data?.totalProfit ?? (todayEarnings * 12.5 + referralBonus)
 
   const cryptoValue = holdings.reduce((sum, h) => {
     const coin = prices.find(p => p.symbol === h.symbol)
@@ -87,10 +88,10 @@ export default function DashboardHome() {
   }, 0)
 
   const stats = [
-    { label: 'Total Balance', value: `$${Number(balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Wallet, gradient: 'bg-gradient-to-br from-blue-600 to-indigo-600', shadow: 'shadow-blue-500/30' },
-    { label: "Today's Earnings", value: `+$${Number(todayEarnings).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: TrendingUp, gradient: 'bg-gradient-to-br from-emerald-500 to-green-600', shadow: 'shadow-emerald-500/30' },
-    { label: 'Crypto Holdings', value: `$${cryptoValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Coins, gradient: 'bg-gradient-to-br from-purple-500 to-fuchsia-600', shadow: 'shadow-purple-500/30' },
-    { label: 'Active Plans', value: String(activeInvestments), icon: Activity, gradient: 'bg-gradient-to-br from-orange-500 to-red-600', shadow: 'shadow-orange-500/30' },
+    { label: 'Balance', value: `$${Number(balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Wallet, gradient: 'bg-gradient-to-br from-blue-600 to-indigo-600', shadow: 'shadow-blue-500/30' },
+    { label: 'Referral Earnings', value: `$${Number(referralBonus).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Gift, gradient: 'bg-gradient-to-br from-emerald-500 to-green-600', shadow: 'shadow-emerald-500/30' },
+    { label: 'Active Plans', value: String(activeInvestments), icon: Activity, gradient: 'bg-gradient-to-br from-purple-500 to-fuchsia-600', shadow: 'shadow-purple-500/30' },
+    { label: 'Total Profit', value: `+$${Number(totalProfit).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: TrendingUp, gradient: 'bg-gradient-to-br from-orange-500 to-red-600', shadow: 'shadow-orange-500/30' },
   ]
 
   const transactions = data?.recentTransactions ?? []
