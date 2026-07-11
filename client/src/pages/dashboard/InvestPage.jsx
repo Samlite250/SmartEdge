@@ -7,8 +7,10 @@ import { Input } from '../../components/ui/Input'
 import { useToast } from '../../components/ui/Toast'
 import { investmentApi } from '../../services/api'
 import { formatCurrency, formatDate } from '../../lib/utils'
+import { useAuth } from '../../hooks/useAuth'
 
 export default function InvestPage() {
+  const { user } = useAuth()
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
@@ -26,8 +28,8 @@ export default function InvestPage() {
   const handleInvest = async () => {
     if (!selected || !amount) return
     const num = parseFloat(amount)
-    if (num < selected.min_investment) return toast(`Minimum investment is ${formatCurrency(selected.min_investment)}`, 'warning')
-    if (selected.max_investment && num > selected.max_investment) return toast(`Maximum investment is ${formatCurrency(selected.max_investment)}`, 'warning')
+    if (num < selected.min_investment) return toast(`Minimum investment is ${formatCurrency(selected.min_investment, user?.currency || 'USD')}`, 'warning')
+    if (selected.max_investment && num > selected.max_investment) return toast(`Maximum investment is ${formatCurrency(selected.max_investment, user?.currency || 'USD')}`, 'warning')
 
     setInvesting(true)
     try {
@@ -87,7 +89,7 @@ export default function InvestPage() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm text-text-secondary">
                       <DollarSign className="w-4 h-4 text-primary" />
-                      <span>{formatCurrency(plan.min_investment)} - {plan.max_investment ? formatCurrency(plan.max_investment) : '∞'}</span>
+                      <span>{formatCurrency(plan.min_investment, user?.currency || 'USD')} - {plan.max_investment ? formatCurrency(plan.max_investment, user?.currency || 'USD') : '∞'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-text-secondary">
                       <TrendingUp className="w-4 h-4 text-primary" />
@@ -141,14 +143,14 @@ export default function InvestPage() {
                 <div className="flex gap-2">
                   {[selected.min_investment, selected.min_investment * 2, selected.min_investment * 5, selected.min_investment * 10].filter(v => !selected.max_investment || v <= selected.max_investment).map(v => (
                     <button key={v} onClick={() => setAmount(String(v))} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${parseFloat(amount) === v ? 'bg-primary text-white border-primary' : 'bg-surface text-text-secondary border-border hover:border-primary'}`}>
-                      {formatCurrency(v)}
+                      {formatCurrency(v, user?.currency || 'USD')}
                     </button>
                   ))}
                 </div>
                 {amount && (
                   <div className="p-3 rounded-xl bg-background border border-border text-sm space-y-1">
-                    <div className="flex justify-between"><span className="text-text-muted">Daily Return</span><span className="font-semibold text-text-primary">{formatCurrency(parseFloat(amount || 0) * selected.daily_return / 100)}</span></div>
-                    <div className="flex justify-between"><span className="text-text-muted">Total Return ({selected.duration}d)</span><span className="font-semibold text-success">{formatCurrency(parseFloat(amount || 0) * selected.daily_return / 100 * selected.duration)}</span></div>
+                    <div className="flex justify-between"><span className="text-text-muted">Daily Return</span><span className="font-semibold text-text-primary">{formatCurrency(parseFloat(amount || 0) * selected.daily_return / 100, user?.currency || 'USD')}</span></div>
+                    <div className="flex justify-between"><span className="text-text-muted">Total Return ({selected.duration}d)</span><span className="font-semibold text-success">{formatCurrency(parseFloat(amount || 0) * selected.daily_return / 100 * selected.duration, user?.currency || 'USD')}</span></div>
                   </div>
                 )}
                 <div className="flex gap-3">

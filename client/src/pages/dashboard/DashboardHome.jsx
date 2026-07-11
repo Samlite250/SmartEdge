@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { Link } from 'react-router-dom'
 import api from '../../lib/api'
 import { useToast } from '../../components/ui/Toast'
+import { formatCurrency } from '../../lib/utils'
 import {
   AreaChart,
   Area,
@@ -96,10 +97,10 @@ export default function DashboardHome() {
   }, 0)
 
   const stats = [
-    { label: 'Balance', value: `$${Number(balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Wallet, bgColor: 'bg-[#4285F4]' },
-    { label: 'Referral Earnings', value: `$${Number(referralBonus).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Gift, bgColor: 'bg-[#0F9D58]' },
+    { label: 'Balance', value: formatCurrency(balance, user?.currency || 'USD'), icon: Wallet, bgColor: 'bg-[#4285F4]' },
+    { label: 'Referral Earnings', value: formatCurrency(referralBonus, user?.currency || 'USD'), icon: Gift, bgColor: 'bg-[#0F9D58]' },
     { label: 'Active Plans', value: String(activeInvestments), icon: Activity, bgColor: 'bg-[#F4B400]' },
-    { label: 'Total Profit', value: `+$${Number(totalProfit).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: TrendingUp, bgColor: 'bg-[#DB4437]' },
+    { label: 'Total Profit', value: `${totalProfit >= 0 ? '+' : ''}${formatCurrency(totalProfit, user?.currency || 'USD')}`, icon: TrendingUp, bgColor: 'bg-[#DB4437]' },
   ]
 
   const transactions = data?.recentTransactions ?? []
@@ -272,7 +273,9 @@ export default function DashboardHome() {
                         <p className="text-sm font-medium text-text-primary capitalize truncate">{tx.type?.replace(/_/g, ' ') || 'Transaction'}</p>
                         <p className="text-xs text-text-muted">{formatDate(tx.created_at)}</p>
                       </div>
-                      <span className={`text-sm font-semibold ${Number(tx.amount) >= 0 ? 'text-emerald-400' : 'text-text-primary'}`}>{Number(tx.amount) >= 0 ? '+' : ''}${Number(tx.amount).toFixed(2)}</span>
+                      <span className={`text-sm font-semibold ${Number(tx.amount) >= 0 ? 'text-emerald-400' : 'text-text-primary'}`}>
+                        {Number(tx.amount) >= 0 ? '+' : ''}{formatCurrency(tx.amount, user?.currency || 'USD')}
+                      </span>
                     </motion.div>
                   ))}
                 </div>

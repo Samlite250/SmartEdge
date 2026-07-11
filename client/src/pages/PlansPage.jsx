@@ -6,15 +6,17 @@ import { Button } from '../components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { investmentApi } from '../services/api'
 import { formatCurrency } from '../lib/utils'
+import { useAuth } from '../hooks/useAuth'
 
 export default function PlansPage() {
+  const { user } = useAuth()
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     investmentApi.getPlans()
       .then(setPlans)
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false))
   }, [])
 
@@ -61,14 +63,14 @@ export default function PlansPage() {
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col">
                     <div className="text-center mb-6">
-                      <p className="text-3xl font-bold text-text-primary">{formatCurrency(plan.min_investment)}</p>
+                      <p className="text-3xl font-bold text-text-primary">{formatCurrency(plan.min_investment, user?.currency || 'USD')}</p>
                       <p className="text-sm text-text-muted">Minimum investment</p>
                     </div>
 
                     <div className="space-y-3 flex-1">
                       <div className="flex items-center gap-3 text-sm text-text-secondary">
                         <DollarSign className="w-4 h-4 text-primary" />
-                        <span>{formatCurrency(plan.min_investment)} - {plan.max_investment ? formatCurrency(plan.max_investment) : '∞'}</span>
+                        <span>{formatCurrency(plan.min_investment, user?.currency || 'USD')} - {plan.max_investment ? formatCurrency(plan.max_investment, user?.currency || 'USD') : '∞'}</span>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-text-secondary">
                         <TrendingUp className="w-4 h-4 text-primary" />

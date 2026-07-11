@@ -7,8 +7,10 @@ import { Input } from '../../components/ui/Input'
 import { useToast } from '../../components/ui/Toast'
 import { walletApi, depositApi, withdrawalApi } from '../../services/api'
 import { formatCurrency, formatDateTime, getStatusColor } from '../../lib/utils'
+import { useAuth } from '../../hooks/useAuth'
 
 export default function WalletPage() {
+  const { user } = useAuth()
   const [wallet, setWallet] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -179,7 +181,7 @@ export default function WalletPage() {
                   </div>
                   <div className="text-right">
                     <p className={`text-sm font-semibold ${tx.type === 'deposit' ? 'text-success' : 'text-danger'}`}>
-                      {tx.type === 'deposit' ? '+' : '-'}{formatCurrency(tx.amount)}
+                      {tx.type === 'deposit' ? '+' : '-'}{formatCurrency(tx.amount, tx.currency || wallet?.currency || user?.currency || 'USD')}
                     </p>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(tx.status)}`}>{tx.status}</span>
                   </div>

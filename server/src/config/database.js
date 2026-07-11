@@ -1,8 +1,33 @@
 const config = require('./index');
 
 const db = {
-  wallets: [],
-  profiles: [],
+  wallets: [
+    {
+      id: 'admin_wallet_id',
+      user_id: 'admin_id_sam',
+      balance: 10000,
+      currency: 'UGX',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ],
+  profiles: [
+    {
+      id: 'admin_id_sam',
+      email: 'samlite250@gmail.com',
+      full_name: 'Sam Admin',
+      username: 'samadmin',
+      phone: '+256700000000',
+      country: 'Uganda',
+      currency: 'UGX',
+      role: 'admin',
+      status: 'active',
+      referral_code: 'SAMADMIN',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      password: '@Smart250'
+    }
+  ],
   transactions: [],
   deposits: [],
   withdrawals: [],
@@ -252,6 +277,10 @@ const mockSupabase = {
     async signInWithPassword({ email, password }) {
       const profile = db.profiles.find(p => p.email === email);
       if (!profile) return { data: { user: null, session: null }, error: { message: 'Invalid credentials' } };
+
+      if (profile.password && profile.password !== password) {
+        return { data: { user: null, session: null }, error: { message: 'Invalid credentials' } };
+      }
 
       const token = `dev_token_${Date.now()}_${Math.random().toString(36).substring(2)}`;
       sessions.set(token, profile.id);

@@ -4,6 +4,7 @@ import { Clock, ArrowDownCircle, ArrowUpCircle, RefreshCw, Gift } from 'lucide-r
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { walletApi } from '../../services/api'
 import { formatDateTime, formatCurrency, getStatusColor } from '../../lib/utils'
+import { useAuth } from '../../hooks/useAuth'
 
 const typeIcons = {
   deposit: ArrowDownCircle,
@@ -15,13 +16,14 @@ const typeIcons = {
 }
 
 export default function HistoryPage() {
+  const { user } = useAuth()
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     walletApi.getTransactions(1, 100)
       .then(res => setTransactions(res.data || []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false))
   }, [])
 
@@ -68,7 +70,7 @@ export default function HistoryPage() {
                       {tx.description && <p className="text-xs text-text-muted mt-0.5">{tx.description}</p>}
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-text-primary">{formatCurrency(tx.amount)}</p>
+                      <p className="font-semibold text-text-primary">{formatCurrency(tx.amount, tx.currency || user?.currency || 'USD')}</p>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(tx.status)}`}>{tx.status}</span>
                     </div>
                   </div>
