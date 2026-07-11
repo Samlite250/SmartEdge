@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft, Gift, DollarSign, Copy, Share2, BadgeCheck, Coins, BarChart3, ExternalLink } from 'lucide-react'
+import { Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft, Gift, DollarSign, Copy, Share2, BadgeCheck, Coins, BarChart3, ExternalLink, Settings, Headphones } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { useAuth } from '../../hooks/useAuth'
 import { Link } from 'react-router-dom'
@@ -292,6 +292,16 @@ export default function DashboardHome() {
               <Link to="/history" className="flex items-center gap-3 p-3 rounded-xl bg-surface hover:bg-surface-hover transition-colors group">
                 <div className="w-10 h-10 rounded-xl green-gradient flex items-center justify-center group-hover:shadow-lg group-hover:shadow-green-500/20 transition-shadow"><BadgeCheck className="w-5 h-5 text-white" /></div>
                 <div className="flex-1"><p className="text-sm font-medium text-text-primary">Transaction History</p><p className="text-xs text-text-muted">View all your transactions</p></div>
+                <ArrowUpRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors" />
+              </Link>
+              <Link to="/profile" className="flex items-center gap-3 p-3 rounded-xl bg-surface hover:bg-surface-hover transition-colors group">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-purple-500/20 transition-shadow"><Settings className="w-5 h-5 text-white" /></div>
+                <div className="flex-1"><p className="text-sm font-medium text-text-primary">Profile Settings</p><p className="text-xs text-text-muted">Manage your account</p></div>
+                <ArrowUpRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors" />
+              </Link>
+              <Link to="/support" className="flex items-center gap-3 p-3 rounded-xl bg-surface hover:bg-surface-hover transition-colors group">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-blue-500/20 transition-shadow"><Headphones className="w-5 h-5 text-white" /></div>
+                <div className="flex-1"><p className="text-sm font-medium text-text-primary">Contact Support</p><p className="text-xs text-text-muted">Get help when you need it</p></div>
                 <ArrowUpRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors" />
               </Link>
             </CardContent>
