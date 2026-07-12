@@ -45,7 +45,7 @@ const getPaymentMethodsForCountry = (country) => {
     Burundi: ['Lumicash', 'EcoCash'],
     Tanzania: ['Tigo Pesa', 'M-Pesa', 'Airtel Money'],
     Nigeria: ['Bank Transfer', 'USDT'],
-    South Africa: ['EFT', 'SnapScan', 'USDT'],
+    'South Africa': ['EFT', 'SnapScan', 'USDT'],
     Ghana: ['MTN Mobile Money', 'Vodafone Cash'],
     'United States': ['Bank Transfer', 'USDT', 'Bitcoin'],
     'United Kingdom': ['Bank Transfer', 'USDT'],
