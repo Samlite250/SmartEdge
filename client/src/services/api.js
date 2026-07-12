@@ -16,7 +16,7 @@ export const userApi = {
 }
 
 export const investmentApi = {
-  getPlans: () => api.get('/investments/plans').then(r => r.data),
+  getPlans: (country) => api.get(`/investments/plans${country ? `?country=${encodeURIComponent(country)}` : ''}`).then(r => r.data),
   getPlan: (id) => api.get(`/investments/plans/${id}`).then(r => r.data),
   invest: (data) => api.post('/investments/invest', data).then(r => r.data),
   getActive: () => api.get('/investments/active').then(r => r.data),
