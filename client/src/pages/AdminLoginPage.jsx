@@ -19,20 +19,25 @@ export default function AdminLoginPage() {
     setLoading(true)
     try {
       const { data } = await api.post('/auth/login', form)
-      const role = data.user?.profile?.role || data.user?.role
-      if (role !== 'admin') {
-        toast('Access denied. Administrators only.', 'error')
-        return
-      }
       login(data.user, data.token)
-      toast('Welcome back, Administrator!', 'success')
-      navigate('/admin')
+      // Verify admin access by hitting the backend — it will 403 if not admin
+      try {
+        await api.get('/admin/dashboard')
+        toast('Welcome back, Administrator!', 'success')
+        navigate('/admin')
+      } catch (adminErr) {
+        // Backend rejected — not actually admin
+        localStorage.removeItem('se_token')
+        localStorage.removeItem('se_user')
+        toast('Access denied. This account does not have admin privileges.', 'error')
+      }
     } catch (err) {
       toast(err.response?.data?.error || 'Invalid credentials. Please try again.', 'error')
     } finally {
       setLoading(false)
     }
   }
+
 
   return (
     <div className="min-h-screen bg-[#080c14] flex">
