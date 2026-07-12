@@ -22,7 +22,8 @@ const db = {
       status: 'active',
       referral_code: 'SAMADMIN',
       created_at: new Date(Date.now() - 60 * 86400000).toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      password: '@Smart250'
     },
     {
       id: 'user_1',
@@ -36,7 +37,8 @@ const db = {
       status: 'active',
       referral_code: 'JOHNDOE123',
       created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      password: 'password123'
     },
     {
       id: 'user_2',
@@ -50,7 +52,8 @@ const db = {
       status: 'active',
       referral_code: 'JANESMITH',
       created_at: new Date(Date.now() - 10 * 86400000).toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      password: 'password123'
     },
     {
       id: 'user_3',
@@ -64,7 +67,8 @@ const db = {
       status: 'suspended',
       referral_code: 'PETERM',
       created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      password: 'password123'
     },
     {
       id: 'user_4',
@@ -78,7 +82,8 @@ const db = {
       status: 'active',
       referral_code: 'ALICEU',
       created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      password: 'password123'
     },
     {
       id: 'user_5',
@@ -92,7 +97,8 @@ const db = {
       status: 'active',
       referral_code: 'KWAMEA',
       created_at: new Date(Date.now() - 1 * 86400000).toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      password: 'password123'
     }
   ],
   transactions: [
@@ -381,10 +387,7 @@ const mockSupabase = {
       };
     },
 
-    async signOut(token) {
-      if (token) sessions.delete(token);
-      return { error: null }
-    },
+    async signOut() { return { error: null } },
 
     async getUser(token) {
       const userId = sessions.get(token);

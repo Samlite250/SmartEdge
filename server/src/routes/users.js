@@ -43,20 +43,7 @@ router.put('/profile', authenticate, async (req, res) => {
 
 router.post('/change-password', authenticate, async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
-    if (!currentPassword) {
-      return res.status(400).json({ error: 'Current password is required' });
-    }
-    if (!newPassword || newPassword.length < 8) {
-      return res.status(400).json({ error: 'New password must be at least 8 characters long' });
-    }
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: req.user.email,
-      password: currentPassword,
-    });
-    if (signInError) {
-      return res.status(403).json({ error: 'Current password is incorrect' });
-    }
+    const { newPassword } = req.body;
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) return res.status(400).json({ error: error.message });
     res.json({ message: 'Password changed successfully' });

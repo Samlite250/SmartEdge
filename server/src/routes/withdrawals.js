@@ -24,11 +24,6 @@ router.post('/', authenticate, async (req, res) => {
     const { amount, paymentMethod, walletAddress, phoneNumber } = req.body;
     const userId = req.user.id;
 
-    const withdrawAmount = Number(amount);
-    if (!amount || isNaN(withdrawAmount) || withdrawAmount <= 0) {
-      return res.status(400).json({ error: 'Amount must be a positive number' });
-    }
-
     const { data: wallet, error: walletError } = await supabase
       .from('wallets')
       .select('*')
@@ -36,7 +31,7 @@ router.post('/', authenticate, async (req, res) => {
       .single();
 
     if (walletError || !wallet) return res.status(404).json({ error: 'Wallet not found' });
-    if (Number(wallet.balance) < withdrawAmount) return res.status(400).json({ error: 'Insufficient balance' });
+    if (Number(wallet.balance) < amount) return res.status(400).json({ error: 'Insufficient balance' });
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -46,7 +41,7 @@ router.post('/', authenticate, async (req, res) => {
 
     const { data, error } = await supabase.from('withdrawals').insert({
       user_id: userId,
-      amount: withdrawAmount,
+      amount,
       payment_method: paymentMethod,
       reference: generateWithdrawRef(),
       status: 'pending',
@@ -57,10 +52,13 @@ router.post('/', authenticate, async (req, res) => {
 
     if (error) return res.status(400).json({ error: error.message });
 
+    const newBalance = Number(wallet.balance) - amount;
+    await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id);
+
     await supabase.from('transactions').insert({
       user_id: userId,
       type: 'withdrawal',
-      amount: withdrawAmount,
+      amount,
       currency: wallet.currency,
       status: 'pending',
       reference: data.reference,

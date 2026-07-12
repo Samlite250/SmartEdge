@@ -24,11 +24,6 @@ router.post('/', authenticate, async (req, res) => {
     const { amount, paymentMethod } = req.body;
     const userId = req.user.id;
 
-    const depositAmount = Number(amount);
-    if (!amount || isNaN(depositAmount) || depositAmount <= 0) {
-      return res.status(400).json({ error: 'Amount must be a positive number' });
-    }
-
     const { data: profile } = await supabase
       .from('profiles')
       .select('country')
@@ -37,7 +32,7 @@ router.post('/', authenticate, async (req, res) => {
 
     const { data, error } = await supabase.from('deposits').insert({
       user_id: userId,
-      amount: depositAmount,
+      amount,
       payment_method: paymentMethod,
       reference: generateDepositRef(),
       status: 'pending',
