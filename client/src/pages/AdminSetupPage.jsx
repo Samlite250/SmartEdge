@@ -12,11 +12,10 @@ export default function AdminSetupPage() {
     const { user, updateUser } = useAuth()
     const toast = useToast()
     const navigate = useNavigate()
-    const [form, setForm] = useState({
-        email: user?.email || '',
-        secret: '',
-    })
+    // Always allow editing — works even when not logged in
+    const [form, setForm] = useState({ email: '', secret: '' })
     const [loading, setLoading] = useState(false)
+    const [done, setDone] = useState(false)
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -25,11 +24,11 @@ export default function AdminSetupPage() {
         setLoading(true)
         try {
             const { data } = await api.post('/admin/setup-admin', form)
-            toast(data.message || 'Promoted to admin! Please log out and log in again.', 'success')
-            // Update local state if the promoted user is the currently logged in user
+            toast(data.message || 'Account promoted to admin!', 'success')
+            setDone(true)
+            // Update local auth state if the same user is logged in
             if (user?.email === form.email) {
                 updateUser({ role: 'admin' })
-                setTimeout(() => navigate('/admin'), 1500)
             }
         } catch (err) {
             toast(err.response?.data?.error || 'Promotion failed. Check your secret key.', 'error')
@@ -57,6 +56,21 @@ export default function AdminSetupPage() {
                         </p>
                     </div>
 
+                    {done ? (
+                        <div className="text-center space-y-4">
+                            <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto">
+                                <ShieldCheck className="w-7 h-7 text-emerald-400" />
+                            </div>
+                            <p className="text-text-primary font-semibold">Account promoted to Admin!</p>
+                            <p className="text-text-muted text-sm">You can now log in through the Admin Portal.</p>
+                            <Link
+                                to="/admin-login"
+                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl card-gradient text-white text-sm font-semibold hover:opacity-90 transition-all"
+                            >
+                                Go to Admin Login <ArrowRight className="w-4 h-4" />
+                            </Link>
+                        </div>
+                    ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <Input
                             label="User Email"
@@ -86,12 +100,14 @@ export default function AdminSetupPage() {
                             Promote to Admin <ArrowRight className="w-4 h-4" />
                         </Button>
                     </form>
+                    )}
 
                     <p className="text-center text-xs text-text-muted mt-6">
-                        <Link to="/login" className="text-primary hover:underline">← Back to Login</Link>
+                        <Link to="/admin-login" className="text-primary hover:underline">← Back to Admin Login</Link>
                     </p>
                 </div>
             </motion.div>
         </div>
     )
 }
+
