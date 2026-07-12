@@ -6,15 +6,17 @@ export function cn(...inputs) {
 }
 
 export function formatCurrency(amount, currency = 'USD') {
+  if (amount == null || isNaN(amount)) return '$0.00'
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount)
+  }).format(Number(amount))
 }
 
 export function formatCompactCurrency(amount, currency = 'USD') {
+  if (amount == null || isNaN(amount)) return '$0.00'
   const abs = Math.abs(amount)
   const sign = amount < 0 ? '-' : ''
   if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(1)}B`
@@ -24,22 +26,31 @@ export function formatCompactCurrency(amount, currency = 'USD') {
 }
 
 export function formatDate(date) {
+  if (!date) return '—'
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return '—'
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  }).format(new Date(date))
+  }).format(d)
 }
 
 export function formatDateTime(date) {
+  if (!date) return '—'
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return '—'
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit',
-  }).format(new Date(date))
+  }).format(d)
 }
 
 export function timeAgo(date) {
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000)
+  if (!date) return '—'
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return '—'
+  const seconds = Math.floor((new Date() - d) / 1000)
   if (seconds < 60) return 'just now'
   const minutes = Math.floor(seconds / 60)
   if (minutes < 60) return `${minutes}m ago`
