@@ -146,9 +146,13 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: error.message || 'Invalid credentials' });
     }
 
+    if (!data?.user?.id) {
+      return res.status(500).json({ error: 'Authentication returned no user' });
+    }
+
     const { data: profile, error: profileError } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
 
-    if (profileError) {
+    if (profileError || !profile) {
       return res.status(500).json({ error: 'Failed to fetch profile' });
     }
 
@@ -157,7 +161,8 @@ router.post('/login', async (req, res) => {
       user: { ...data.user, profile },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Login failed' });
+    console.error('[Login Error]', error?.message || error);
+    res.status(500).json({ error: process.env.NODE_ENV === 'development' ? error?.message : 'Login failed' });
   }
 });
 
