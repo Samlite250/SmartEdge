@@ -194,14 +194,30 @@ export default function AdminLoginPage() {
           </form>
 
           {/* Footer */}
-          <div className="flex items-center justify-between mt-8">
-            <Link to="/login" className="text-xs text-white/25 hover:text-white/50 transition-colors">
-              ← User Login
+          <div className="mt-6 pt-6 border-t border-white/5 space-y-3">
+            <Link
+              to="/admin-setup"
+              className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 transition-all group"
+            >
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <div>
+                  <p className="text-xs font-semibold text-emerald-400">First time? Promote account to Admin</p>
+                  <p className="text-[11px] text-white/25">Run this once if you get "Access denied"</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-emerald-400/50 group-hover:text-emerald-400 transition-colors" />
             </Link>
-            <Link to="/" className="text-xs text-white/25 hover:text-white/50 transition-colors">
-              Back to Home
-            </Link>
+            <div className="flex items-center justify-between">
+              <Link to="/login" className="text-xs text-white/25 hover:text-white/50 transition-colors">
+                ← User Login
+              </Link>
+              <Link to="/" className="text-xs text-white/25 hover:text-white/50 transition-colors">
+                Back to Home
+              </Link>
+            </div>
           </div>
+
         </motion.div>
       </div>
     </div>
