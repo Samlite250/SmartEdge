@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import api from '../../lib/api'
 import { useToast } from '../../components/ui/Toast'
 import { formatCurrency } from '../../lib/utils'
+import { getCountryFlag } from '../../lib/countries'
 import {
   AreaChart,
   Area,
@@ -23,14 +24,6 @@ const holdings = [
   { name: 'Solana', symbol: 'SOL', amount: 12.5, logo: 'https://cryptologos.cc/logos/solana-sol-logo.png' },
   { name: 'Tether', symbol: 'USDT', amount: 250.00, logo: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
 ]
-
-const countryFlags = {
-  'Uganda': '🇺🇬',
-  'Kenya': '🇰🇪',
-  'Rwanda': '🇷🇼',
-  'Burundi': '🇧🇮',
-  'International': '🌐'
-}
 
 const marketCoins = [
   { name: 'Bitcoin', symbol: 'BTC', price: '$67,432.10', change: '+2.4%', up: true, logo: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png' },
@@ -89,6 +82,8 @@ export default function DashboardHome() {
   const referralBonus = data?.referrals?.reduce((sum, r) => sum + Number(r.bonus || 0), 0) ?? 0
   const referralCount = data?.referrals?.length ?? 0
   const totalProfit = data?.totalProfit ?? (todayEarnings * 12.5 + referralBonus)
+  const userCurrency = user?.currency || 'USD'
+  const countryFlag = getCountryFlag(user?.country)
 
   const cryptoValue = holdings.reduce((sum, h) => {
     const coin = prices.find(p => p.symbol === h.symbol)
@@ -97,10 +92,10 @@ export default function DashboardHome() {
   }, 0)
 
   const stats = [
-    { label: 'Balance', value: formatCurrency(balance, user?.currency || 'USD'), icon: Wallet, bgColor: 'bg-[#4285F4]' },
-    { label: 'Referral Earnings', value: formatCurrency(referralBonus, user?.currency || 'USD'), icon: Gift, bgColor: 'bg-[#0F9D58]' },
+    { label: 'Balance', value: formatCurrency(balance, userCurrency), icon: Wallet, bgColor: 'bg-[#4285F4]' },
+    { label: 'Referral Earnings', value: formatCurrency(referralBonus, userCurrency), icon: Gift, bgColor: 'bg-[#0F9D58]' },
     { label: 'Active Plans', value: String(activeInvestments), icon: Activity, bgColor: 'bg-[#F4B400]' },
-    { label: 'Total Profit', value: `${totalProfit >= 0 ? '+' : ''}${formatCurrency(totalProfit, user?.currency || 'USD')}`, icon: TrendingUp, bgColor: 'bg-[#DB4437]' },
+    { label: 'Total Profit', value: `${totalProfit >= 0 ? '+' : ''}${formatCurrency(totalProfit, userCurrency)}`, icon: TrendingUp, bgColor: 'bg-[#DB4437]' },
   ]
 
   const transactions = data?.recentTransactions ?? []
@@ -134,7 +129,7 @@ export default function DashboardHome() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-text-primary">Welcome back, {user?.full_name || 'User'}</h1>
+        <h1 className="text-2xl font-bold text-text-primary">Welcome back{countryFlag ? ` ${countryFlag}` : ''}, {user?.full_name || 'User'}</h1>
         <Card><CardContent className="text-center py-12"><p className="text-danger mb-4">{error}</p><button onClick={() => window.location.reload()} className="text-primary hover:underline text-sm">Try again</button></CardContent></Card>
       </div>
     )
@@ -149,11 +144,21 @@ export default function DashboardHome() {
         <div className="absolute top-0 right-0 p-32 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
         <div className="relative z-10 space-y-2">
           <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent flex items-center gap-3">
-            Welcome back, {user?.full_name?.split(' ')[0] || 'User'} <span className="text-3xl">{countryFlags[user?.country] || '🌐'}</span>
+            Welcome back, {user?.full_name?.split(' ')[0] || 'User'} {countryFlag ? <span className="text-3xl">{countryFlag}</span> : ''}
           </motion.h1>
           <motion.p initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="text-text-secondary text-sm md:text-base">
             Your portfolio is up <span className="text-emerald-400 font-semibold">+4.5%</span> this week. Keep it growing.
           </motion.p>
+        </div>
+
+        {/* Quick Wallet Actions */}
+        <div className="flex gap-3">
+          <Link to="/wallet" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl bg-primary text-white hover:bg-primary-dark shadow-button transition-all duration-200">
+            <ArrowDownCircle className="w-5 h-5" /> Deposit
+          </Link>
+          <Link to="/wallet" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200">
+            <ArrowUpCircle className="w-5 h-5" /> Withdraw
+          </Link>
         </div>
       </div>
 
@@ -176,16 +181,6 @@ export default function DashboardHome() {
             </motion.div>
           )
         })}
-      </div>
-
-      {/* Quick Wallet Actions */}
-      <div className="grid grid-cols-2 gap-4">
-        <Link to="/wallet" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl bg-primary text-white hover:bg-primary-dark shadow-button transition-all duration-200">
-          <ArrowDownCircle className="w-5 h-5" /> Deposit
-        </Link>
-        <Link to="/wallet" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200">
-          <ArrowUpCircle className="w-5 h-5" /> Withdraw
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -244,7 +239,7 @@ export default function DashboardHome() {
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-end mb-1">
                             <span className="font-semibold text-text-primary text-sm">{h.symbol}</span>
-                            <span className="font-semibold text-text-primary text-sm">${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                            <span className="font-semibold text-text-primary text-sm">{formatCurrency(value, userCurrency)}</span>
                           </div>
                           <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
                             <div className={`h-full rounded-full transition-all duration-1000 ${h.symbol === 'BTC' ? 'bg-orange-500' : h.symbol === 'ETH' ? 'bg-indigo-500' : h.symbol === 'SOL' ? 'bg-cyan-500' : 'bg-emerald-500'}`} style={{ width: `${pct}%` }} />
@@ -274,7 +269,7 @@ export default function DashboardHome() {
                         <p className="text-xs text-text-muted">{formatDate(tx.created_at)}</p>
                       </div>
                       <span className={`text-sm font-semibold ${Number(tx.amount) >= 0 ? 'text-emerald-400' : 'text-text-primary'}`}>
-                        {Number(tx.amount) >= 0 ? '+' : ''}{formatCurrency(tx.amount, user?.currency || 'USD')}
+                        {Number(tx.amount) >= 0 ? '+' : ''}{formatCurrency(tx.amount, userCurrency)}
                       </span>
                     </motion.div>
                   ))}
@@ -293,7 +288,7 @@ export default function DashboardHome() {
 
         {/* Right Column */}
         <div className="space-y-6">
-          {/* Market Watch (Marquee-like or List) */}
+          {/* Market Watch */}
           <div className="bg-[#131A28] rounded-3xl border border-white/5 p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-text-primary">Market Watch</h3>
@@ -358,7 +353,6 @@ export default function DashboardHome() {
               </Link>
             </div>
           </div>
-
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
-const { generateDepositRef, generateReferralCode } = require('../utils/helpers');
+const { generateDepositRef, generateReferralCode, getCountryCurrency } = require('../utils/helpers');
 
 router.post('/register', async (req, res) => {
   try {
@@ -24,9 +24,7 @@ router.post('/register', async (req, res) => {
     if (authError) return res.status(400).json({ error: authError.message });
 
     if (authData.user) {
-      const userCurrency = country && country !== 'International'
-        ? (country === 'Uganda' ? 'UGX' : country === 'Kenya' ? 'KES' : country === 'Rwanda' ? 'RWF' : 'BIF')
-        : 'USD';
+      const userCurrency = getCountryCurrency(country);
 
       // Check if profile was already created (e.g. by database trigger)
       const { data: existingProfile } = await supabase

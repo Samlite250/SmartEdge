@@ -15,6 +15,7 @@ export const Input = forwardRef(({ label, error, icon: Icon, className, ...props
         )}
         <input
           ref={ref}
+          style={{ color: '#1A1D2A', WebkitTextFillColor: '#1A1D2A' }}
           className={cn(
             'w-full px-4 py-3 bg-white border-2 border-border rounded-xl text-sm text-text-primary placeholder:text-text-muted transition-all duration-200 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10',
             Icon && 'pl-11',

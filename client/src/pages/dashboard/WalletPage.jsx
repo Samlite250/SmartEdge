@@ -20,6 +20,7 @@ export default function WalletPage() {
   const [form, setForm] = useState({ amount: '', paymentMethod: '', walletAddress: '', phoneNumber: '' })
   const [submitting, setSubmitting] = useState(false)
   const toast = useToast()
+  const userCurrency = user?.currency || wallet?.currency || 'USD'
 
   const load = () => {
     setLoading(true)
@@ -181,7 +182,7 @@ export default function WalletPage() {
                   </div>
                   <div className="text-right">
                     <p className={`text-sm font-semibold ${tx.type === 'deposit' ? 'text-success' : 'text-danger'}`}>
-                      {tx.type === 'deposit' ? '+' : '-'}{formatCurrency(tx.amount, tx.currency || wallet?.currency || user?.currency || 'USD')}
+                      {tx.type === 'deposit' ? '+' : '-'}{formatCurrency(tx.amount, tx.currency || wallet?.currency || userCurrency)}
                     </p>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(tx.status)}`}>{tx.status}</span>
                   </div>

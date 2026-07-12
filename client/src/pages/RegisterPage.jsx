@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Eye, EyeOff, Mail, Lock, User, Phone, Globe, Gift, ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Phone, Gift, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
+import { CountrySelect } from '../components/ui/CountrySelect'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/ui/Toast'
 import api from '../lib/api'
-
-const countries = ['Uganda', 'Kenya', 'Rwanda', 'Burundi', 'International']
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -17,7 +16,7 @@ export default function RegisterPage() {
   const { login } = useAuth()
   const [form, setForm] = useState({
     fullName: '', username: '', email: '', phone: '',
-    country: 'International', referralCode: searchParams.get('ref') || '',
+    country: '', referralCode: searchParams.get('ref') || '',
     password: '', confirmPassword: '', acceptTerms: false,
   })
   const toast = useToast()
@@ -30,6 +29,9 @@ export default function RegisterPage() {
     }
     if (!form.acceptTerms) {
       return toast('Please accept the terms and conditions', 'warning')
+    }
+    if (!form.country) {
+      return toast('Please select your country', 'warning')
     }
     setLoading(true)
     try {
@@ -83,20 +85,11 @@ export default function RegisterPage() {
             </div>
             <Input label="Email" type="email" placeholder="you@example.com" icon={Mail} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
             <Input label="Phone Number" placeholder="+256 700 000 000" icon={Phone} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-            
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-text-secondary">Country</label>
-              <div className="relative">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted w-5 h-5" />
-                <select
-                  value={form.country}
-                  onChange={e => setForm({ ...form, country: e.target.value })}
-                  className="w-full pl-11 pr-4 py-3 bg-white border-2 border-border rounded-xl text-sm text-text-primary focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 appearance-none"
-                >
-                  {countries.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-            </div>
+
+            <CountrySelect
+              value={form.country}
+              onChange={country => setForm({ ...form, country })}
+            />
 
             <Input label="Referral Code (Optional)" placeholder="Enter referral code" icon={Gift} value={form.referralCode} onChange={e => setForm({ ...form, referralCode: e.target.value })} />
 

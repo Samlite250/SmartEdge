@@ -3,6 +3,7 @@ import { BottomNav } from './BottomNav'
 import { useAuth } from '../../hooks/useAuth'
 import { Button } from '../ui/Button'
 import { LogOut, Bell, ShieldCheck } from 'lucide-react'
+import { getCountryFlag } from '../../lib/countries'
 
 const navLinks = [
   { name: 'Home', path: '/dashboard' },
@@ -15,6 +16,7 @@ const navLinks = [
 export function DashboardLayout() {
   const { user, logout, isAdmin } = useAuth()
   const location = useLocation()
+  const countryFlag = getCountryFlag(user?.country)
 
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
@@ -25,7 +27,7 @@ export function DashboardLayout() {
               <span className="text-white font-bold text-sm">SE</span>
             </Link>
             <div>
-              <p className="text-sm font-semibold text-text-primary">{user?.full_name || 'User'}</p>
+              <p className="text-sm font-semibold text-text-primary">{countryFlag ? `${countryFlag} ` : ''}{user?.full_name || 'User'}</p>
               <p className="text-xs text-text-muted">Welcome back</p>
             </div>
           </div>
