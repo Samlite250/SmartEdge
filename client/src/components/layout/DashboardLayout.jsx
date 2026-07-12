@@ -45,8 +45,11 @@ export function DashboardLayout() {
 
           <div className="flex items-center gap-3">
             {isAdmin && (
-              <Link to="/admin" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
-                <ShieldCheck className="w-3.5 h-3.5" /> Admin Panel
+              <Link to="/admin" className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Admin Panel
+                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400" />
               </Link>
             )}
             <button className="p-2 rounded-xl hover:bg-background text-text-muted relative">

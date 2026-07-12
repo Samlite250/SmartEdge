@@ -2,14 +2,12 @@ const config = require('./index');
 
 const db = {
   wallets: [
-    {
-      id: 'admin_wallet_id',
-      user_id: 'admin_id_sam',
-      balance: 10000,
-      currency: 'UGX',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
+    { id: 'admin_wallet_id', user_id: 'admin_id_sam', balance: 10000, currency: 'UGX', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'wallet_1', user_id: 'user_1', balance: 250, currency: 'UGX', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'wallet_2', user_id: 'user_2', balance: 1500, currency: 'KES', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'wallet_3', user_id: 'user_3', balance: 0, currency: 'KES', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'wallet_4', user_id: 'user_4', balance: 50, currency: 'RWF', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: 'wallet_5', user_id: 'user_5', balance: 200, currency: 'GHS', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
   ],
   profiles: [
     {
@@ -23,16 +21,111 @@ const db = {
       role: 'admin',
       status: 'active',
       referral_code: 'SAMADMIN',
-      created_at: new Date().toISOString(),
+      created_at: new Date(Date.now() - 60 * 86400000).toISOString(),
       updated_at: new Date().toISOString(),
       password: '@Smart250'
+    },
+    {
+      id: 'user_1',
+      email: 'john.doe@example.com',
+      full_name: 'John Doe',
+      username: 'johndoe',
+      phone: '+256772123456',
+      country: 'Uganda',
+      currency: 'UGX',
+      role: 'user',
+      status: 'active',
+      referral_code: 'JOHNDOE123',
+      created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
+      updated_at: new Date().toISOString(),
+      password: 'password123'
+    },
+    {
+      id: 'user_2',
+      email: 'jane.smith@example.com',
+      full_name: 'Jane Smith',
+      username: 'janesmith',
+      phone: '+254712345678',
+      country: 'Kenya',
+      currency: 'KES',
+      role: 'user',
+      status: 'active',
+      referral_code: 'JANESMITH',
+      created_at: new Date(Date.now() - 10 * 86400000).toISOString(),
+      updated_at: new Date().toISOString(),
+      password: 'password123'
+    },
+    {
+      id: 'user_3',
+      email: 'peter.mwangi@example.com',
+      full_name: 'Peter Mwangi',
+      username: 'peterm',
+      phone: '+254722987654',
+      country: 'Kenya',
+      currency: 'KES',
+      role: 'user',
+      status: 'suspended',
+      referral_code: 'PETERM',
+      created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+      updated_at: new Date().toISOString(),
+      password: 'password123'
+    },
+    {
+      id: 'user_4',
+      email: 'alice.uwase@example.com',
+      full_name: 'Alice Uwase',
+      username: 'aliceu',
+      phone: '+250788123456',
+      country: 'Rwanda',
+      currency: 'RWF',
+      role: 'user',
+      status: 'active',
+      referral_code: 'ALICEU',
+      created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+      updated_at: new Date().toISOString(),
+      password: 'password123'
+    },
+    {
+      id: 'user_5',
+      email: 'kwame.asante@example.com',
+      full_name: 'Kwame Asante',
+      username: 'kwamea',
+      phone: '+233244567890',
+      country: 'Ghana',
+      currency: 'GHS',
+      role: 'user',
+      status: 'active',
+      referral_code: 'KWAMEA',
+      created_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+      updated_at: new Date().toISOString(),
+      password: 'password123'
     }
   ],
-  transactions: [],
-  deposits: [],
-  withdrawals: [],
-  referrals: [],
-  user_investments: [],
+  transactions: [
+    { id: 'tx_1', user_id: 'user_1', type: 'deposit', amount: 100, currency: 'USD', status: 'completed', reference: 'TXN10029304', description: 'Deposit via MTN Mobile Money', created_at: new Date(Date.now() - 14 * 86400000).toISOString() },
+    { id: 'tx_2', user_id: 'user_2', type: 'withdrawal', amount: 100, currency: 'USD', status: 'completed', reference: 'WDN3992013', description: 'Withdrawal via M-Pesa', created_at: new Date(Date.now() - 7 * 86400000).toISOString() },
+    { id: 'tx_3', user_id: 'user_4', type: 'deposit', amount: 50, currency: 'USD', status: 'completed', reference: 'TXN99201934', description: 'Deposit via MTN MoMo', created_at: new Date(Date.now() - 2 * 86400000).toISOString() },
+    { id: 'tx_4', user_id: 'user_1', type: 'daily_return', amount: 2.5, currency: 'USD', status: 'completed', reference: 'RET20012311', description: 'Daily return from Starter Plan', created_at: new Date(Date.now() - 1 * 86400000).toISOString() },
+    { id: 'tx_5', user_id: 'user_5', type: 'deposit', amount: 200, currency: 'USD', status: 'completed', reference: 'TXN55128743', description: 'Deposit via MTN Mobile Money', created_at: new Date(Date.now() - 1 * 86400000).toISOString() }
+  ],
+  deposits: [
+    { id: 'dep_1', user_id: 'user_1', amount: 100, payment_method: 'MTN Mobile Money', reference: 'TXN10029304', status: 'approved', created_at: new Date(Date.now() - 14 * 86400000).toISOString(), updated_at: new Date().toISOString() },
+    { id: 'dep_2', user_id: 'user_2', amount: 500, payment_method: 'M-Pesa', reference: 'TXN88920192', status: 'pending', created_at: new Date(Date.now() - 1 * 86400000).toISOString(), updated_at: new Date().toISOString() },
+    { id: 'dep_3', user_id: 'user_4', amount: 50, payment_method: 'MTN MoMo', reference: 'TXN99201934', status: 'approved', created_at: new Date(Date.now() - 2 * 86400000).toISOString(), updated_at: new Date().toISOString() },
+    { id: 'dep_4', user_id: 'user_5', amount: 200, payment_method: 'MTN Mobile Money', reference: 'TXN55128743', status: 'pending', created_at: new Date(Date.now() - 1 * 86400000).toISOString(), updated_at: new Date().toISOString() }
+  ],
+  withdrawals: [
+    { id: 'wd_1', user_id: 'user_1', amount: 20, payment_method: 'MTN Mobile Money', reference: 'WDN2002345', status: 'pending', created_at: new Date(Date.now() - 1 * 86400000).toISOString(), updated_at: new Date().toISOString() },
+    { id: 'wd_2', user_id: 'user_2', amount: 100, payment_method: 'M-Pesa', reference: 'WDN3992013', status: 'approved', created_at: new Date(Date.now() - 7 * 86400000).toISOString(), updated_at: new Date().toISOString() }
+  ],
+  referrals: [
+    { id: 'ref_1', referrer_id: 'admin_id_sam', referred_id: 'user_1', bonus: 10, status: 'completed', created_at: new Date(Date.now() - 15 * 86400000).toISOString() },
+    { id: 'ref_2', referrer_id: 'user_1', referred_id: 'user_2', bonus: 5, status: 'completed', created_at: new Date(Date.now() - 10 * 86400000).toISOString() }
+  ],
+  user_investments: [
+    { id: 'inv_1', user_id: 'user_1', plan_id: 'plan_1', amount: 50, daily_return: 0.25, total_return: 7.5, duration: 30, days_passed: 12, status: 'active', created_at: new Date(Date.now() - 12 * 86400000).toISOString(), updated_at: new Date().toISOString() },
+    { id: 'inv_2', user_id: 'user_2', plan_id: 'plan_2', amount: 200, daily_return: 1.6, total_return: 72, duration: 45, days_passed: 45, status: 'completed', created_at: new Date(Date.now() - 50 * 86400000).toISOString(), updated_at: new Date().toISOString() }
+  ],
   investment_plans: [
     { id: 'plan_1', name: 'Starter Plan', description: 'Perfect for beginners starting their investment journey', min_investment: 10, max_investment: 99, daily_return: 0.50, duration: 30, total_return: 15.00, risk_level: 'low', status: 'active', features: ['Daily returns', 'Capital preservation', 'Instant withdrawals'], coin_id: 'coin_1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: 'plan_2', name: 'Growth Plan', description: 'Balanced growth with moderate returns', min_investment: 100, max_investment: 999, daily_return: 0.80, duration: 45, total_return: 36.00, risk_level: 'medium', status: 'active', features: ['Higher daily returns', 'Compound interest', 'Priority support'], coin_id: 'coin_2', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },

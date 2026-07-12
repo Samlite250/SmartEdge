@@ -37,15 +37,27 @@ export default function AdminUsers() {
   const [statusFilter, setStatusFilter] = useState('all')
   const toast = useToast()
 
+  const [error, setError] = useState(null)
+
   const load = () => {
     setLoading(true)
+    setError(null)
     adminApi.getUsers()
-      .then(setUsers)
-      .catch(() => toast('Failed to load users', 'error'))
+      .then(res => {
+        // API may return array directly or { data: [...] }
+        const list = Array.isArray(res) ? res : (res?.data ?? [])
+        setUsers(list)
+      })
+      .catch(err => {
+        const msg = err?.response?.data?.error || err?.message || 'Failed to load users'
+        setError(msg)
+        toast(msg, 'error')
+      })
       .finally(() => setLoading(false))
   }
 
   useEffect(load, [])
+
 
   const toggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'active' ? 'suspended' : 'active'
@@ -78,6 +90,15 @@ export default function AdminUsers() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="flex items-center justify-between p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm">
+          <span>⚠ {error}</span>
+          <button onClick={load} className="ml-4 px-3 py-1 rounded-lg bg-danger/10 hover:bg-danger/20 border border-danger/30 text-xs font-semibold transition-colors">
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
