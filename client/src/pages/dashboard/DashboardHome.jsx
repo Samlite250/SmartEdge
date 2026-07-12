@@ -151,15 +151,6 @@ export default function DashboardHome() {
           </motion.p>
         </div>
 
-        {/* Quick Wallet Actions */}
-        <div className="flex gap-3">
-          <Link to="/wallet" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl bg-primary text-white hover:bg-primary-dark shadow-button transition-all duration-200">
-            <ArrowDownCircle className="w-5 h-5" /> Deposit
-          </Link>
-          <Link to="/wallet" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200">
-            <ArrowUpCircle className="w-5 h-5" /> Withdraw
-          </Link>
-        </div>
       </div>
 
       {/* Stats Grid */}
@@ -181,6 +172,22 @@ export default function DashboardHome() {
             </motion.div>
           )
         })}
+      </div>
+
+      {/* Deposit & Withdraw Action Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Link to="/wallet" className="col-span-1 sm:col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl bg-primary text-white font-semibold text-sm hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+          <ArrowDownCircle className="w-5 h-5" /> Deposit
+        </Link>
+        <Link to="/wallet" className="col-span-1 sm:col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border-2 border-primary/60 text-primary font-semibold text-sm hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+          <ArrowUpCircle className="w-5 h-5" /> Withdraw
+        </Link>
+        <Link to="/invest" className="col-span-1 sm:col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+          <TrendingUp className="w-5 h-5 text-warning" /> Invest
+        </Link>
+        <Link to="/history" className="col-span-1 sm:col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+          <Activity className="w-5 h-5 text-blue-400" /> History
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
