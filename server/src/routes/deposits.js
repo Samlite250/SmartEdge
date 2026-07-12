@@ -21,8 +21,12 @@ router.get('/methods', authenticate, async (req, res) => {
 
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { amount, paymentMethod } = req.body;
+    const { amount, paymentMethod, payerName, payerPhone, proofImage } = req.body;
     const userId = req.user.id;
+
+    if (!proofImage) return res.status(400).json({ error: 'Payment proof screenshot is required' });
+    if (!payerName?.trim()) return res.status(400).json({ error: 'Payer name is required' });
+    if (!payerPhone?.trim()) return res.status(400).json({ error: 'Payer phone number is required' });
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -37,6 +41,11 @@ router.post('/', authenticate, async (req, res) => {
       reference: generateDepositRef(),
       status: 'pending',
       country: profile?.country || 'International',
+      metadata: {
+        payer_name: payerName,
+        payer_phone: payerPhone,
+        proof_image: proofImage,
+      },
     }).select().single();
 
     if (error) return res.status(400).json({ error: error.message });

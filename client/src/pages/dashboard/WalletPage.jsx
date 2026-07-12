@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wallet, ArrowDownCircle, ArrowUpCircle, Copy, Banknote, Smartphone, X } from 'lucide-react'
+import { Wallet, ArrowDownCircle, ArrowUpCircle, Copy, Banknote, Smartphone, X, Upload, Image as ImageIcon } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
@@ -17,8 +17,10 @@ export default function WalletPage() {
   const [mode, setMode] = useState(null)
   const [depositMethods, setDepositMethods] = useState([])
   const [withdrawMethods, setWithdrawMethods] = useState([])
-  const [form, setForm] = useState({ amount: '', paymentMethod: '', walletAddress: '', phoneNumber: '' })
+  const [form, setForm] = useState({ amount: '', paymentMethod: '', walletAddress: '', phoneNumber: '', payerName: '', payerPhone: '', proofImage: '' })
+  const [proofPreview, setProofPreview] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const fileInputRef = useRef(null)
   const toast = useToast()
   const userCurrency = user?.currency || wallet?.currency || 'USD'
 
@@ -42,14 +44,37 @@ export default function WalletPage() {
 
   useEffect(load, [])
 
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) return toast('Please select an image file', 'warning')
+    if (file.size > 5 * 1024 * 1024) return toast('Image must be under 5MB', 'warning')
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      setProofPreview(ev.target.result)
+      setForm(f => ({ ...f, proofImage: ev.target.result }))
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleDeposit = async () => {
     if (!form.amount || !form.paymentMethod) return
+    if (!form.proofImage) return toast('Please upload payment proof screenshot', 'warning')
+    if (!form.payerName.trim()) return toast('Please enter the name used for payment', 'warning')
+    if (!form.payerPhone.trim()) return toast('Please enter the phone number used to pay', 'warning')
     setSubmitting(true)
     try {
-      await depositApi.create({ amount: parseFloat(form.amount), paymentMethod: form.paymentMethod })
-      toast('Deposit request submitted!', 'success')
+      await depositApi.create({
+        amount: parseFloat(form.amount),
+        paymentMethod: form.paymentMethod,
+        payerName: form.payerName,
+        payerPhone: form.payerPhone,
+        proofImage: form.proofImage,
+      })
+      toast('Deposit request submitted! Awaiting admin approval.', 'success')
       setMode(null)
-      setForm({ amount: '', paymentMethod: '', walletAddress: '', phoneNumber: '' })
+      setForm({ amount: '', paymentMethod: '', walletAddress: '', phoneNumber: '', payerName: '', payerPhone: '', proofImage: '' })
+      setProofPreview(null)
     } catch (err) {
       toast(err.response?.data?.error || 'Deposit failed', 'error')
     } finally {
@@ -146,6 +171,53 @@ export default function WalletPage() {
                     ))}
                   </div>
                 </div>
+
+                {mode === 'deposit' && (
+                  <>
+                    {/* Payment Proof Upload */}
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-medium text-text-secondary">Payment Proof (Screenshot)</label>
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="relative flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 cursor-pointer transition-colors bg-surface/50"
+                      >
+                        {proofPreview ? (
+                          <div className="relative w-full">
+                            <img src={proofPreview} alt="Proof" className="max-h-40 rounded-lg mx-auto object-contain" />
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setProofPreview(null); setForm(f => ({ ...f, proofImage: '' })); fileInputRef.current.value = '' }}
+                              className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white hover:bg-black/80"
+                            ><X className="w-3.5 h-3.5" /></button>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 text-text-muted mb-2" />
+                            <p className="text-sm text-text-muted">Upload payment screenshot</p>
+                            <p className="text-[10px] text-text-muted/60 mt-1">PNG, JPG up to 5MB</p>
+                          </>
+                        )}
+                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+                      </div>
+                    </div>
+
+                    <Input
+                      label="Name Used for Payment"
+                      placeholder="Enter the name on the payment"
+                      icon={Smartphone}
+                      value={form.payerName}
+                      onChange={e => setForm({ ...form, payerName: e.target.value })}
+                    />
+                    <Input
+                      label="Phone Number Used to Pay"
+                      placeholder="+256 700 000 000"
+                      icon={Smartphone}
+                      value={form.payerPhone}
+                      onChange={e => setForm({ ...form, payerPhone: e.target.value })}
+                    />
+                  </>
+                )}
+
                 {mode === 'withdraw' && (
                   <>
                     <Input label="Wallet Address (for crypto)" placeholder="Optional for crypto" value={form.walletAddress} onChange={e => setForm({ ...form, walletAddress: e.target.value })} />
@@ -154,7 +226,7 @@ export default function WalletPage() {
                 )}
                 <Button className="w-full capitalize" onClick={mode === 'deposit' ? handleDeposit : handleWithdraw} loading={submitting}>
                   {mode === 'deposit' ? <ArrowDownCircle className="w-5 h-5" /> : <ArrowUpCircle className="w-5 h-5" />}
-                  {mode === 'deposit' ? 'Deposit' : 'Withdraw'}
+                  {mode === 'deposit' ? 'Submit Deposit' : 'Withdraw'}
                 </Button>
               </CardContent>
             </Card>

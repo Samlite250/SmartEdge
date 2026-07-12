@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { useToast } from '../../components/ui/Toast'
-import { investmentApi } from '../../services/api'
+import { investmentApi, walletApi } from '../../services/api'
 import { formatCurrency } from '../../lib/utils'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -33,14 +33,21 @@ export default function InvestPage() {
   const [selected, setSelected] = useState(null)
   const [amount, setAmount] = useState('')
   const [investing, setInvesting] = useState(false)
+  const [balance, setBalance] = useState(0)
   const toast = useToast()
   const userCurrency = user?.currency || 'USD'
   const country = user?.country || ''
   const isVIP = plans.length > 0 && plans[0]?.is_vip
 
   useEffect(() => {
-    investmentApi.getPlans(country)
-      .then(setPlans)
+    Promise.all([
+      investmentApi.getPlans(country),
+      walletApi.getWallet().catch(() => ({ balance: 0 })),
+    ])
+      .then(([plansData, wallet]) => {
+        setPlans(plansData)
+        setBalance(Number(wallet.balance) || 0)
+      })
       .catch(() => toast('Failed to load plans', 'error'))
       .finally(() => setLoading(false))
   }, [country])
@@ -51,6 +58,8 @@ export default function InvestPage() {
     if (num < selected.min_investment) return toast(`Minimum is ${formatCurrency(selected.min_investment, userCurrency)}`, 'warning')
     if (selected.max_investment && num > selected.max_investment) return toast(`Maximum is ${formatCurrency(selected.max_investment, userCurrency)}`, 'warning')
 
+    if (num > balance) return toast(`Insufficient balance. You have ${formatCurrency(balance, userCurrency)}`, 'error')
+
     setInvesting(true)
     try {
       await investmentApi.invest({
@@ -60,6 +69,7 @@ export default function InvestPage() {
         country: selected.country || country,
       })
       toast('Investment successful!', 'success')
+      setBalance(b => b - num)
       setSelected(null)
       setAmount('')
     } catch (err) {
@@ -369,11 +379,25 @@ export default function InvestPage() {
                       </div>
                     )}
 
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-sm">
+                      <span className="text-text-muted">Your Balance</span>
+                      <span className={`font-bold ${parseFloat(amount || 0) > balance ? 'text-danger' : 'text-emerald-400'}`}>
+                        {formatCurrency(balance, userCurrency)}
+                      </span>
+                    </div>
+
+                    {parseFloat(amount || 0) > balance && (
+                      <div className="flex gap-2 p-3 rounded-xl bg-danger/5 border border-danger/20">
+                        <Info className="w-4 h-4 text-danger flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-danger/80">Insufficient balance. Deposit funds first.</p>
+                      </div>
+                    )}
+
                     <div className="flex gap-3 pt-2">
                       <Button
                         onClick={handleInvest}
                         loading={investing}
-                        disabled={!amount || parseFloat(amount) < selected.min_investment}
+                        disabled={!amount || parseFloat(amount) < selected.min_investment || parseFloat(amount || 0) > balance}
                         className="flex-1"
                       >
                         Invest Now <ArrowRight className="w-4 h-4 ml-2" />
