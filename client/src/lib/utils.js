@@ -7,11 +7,12 @@ export function cn(...inputs) {
 
 export function formatCurrency(amount, currency = 'USD') {
   if (amount == null || isNaN(amount)) return '$0.00'
+  const noDec = ['UGX', 'BIF', 'RWF', 'JPY', 'KRW', 'VND']
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: noDec.includes(currency) ? 0 : 2,
+    maximumFractionDigits: noDec.includes(currency) ? 0 : 2,
   }).format(Number(amount))
 }
 

@@ -145,13 +145,14 @@ export default function InvestPage() {
           </div>
 
           {/* VIP Cards Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {plans.map((plan, i) => {
               const colors = TIER_COLORS[i % TIER_COLORS.length]
               const dailyReturn = plan.min_investment * plan.daily_return / 100
               const totalReturn = dailyReturn * plan.duration
               const totalPayout = plan.min_investment + totalReturn
               const isSelected = selected?.id === plan.id
+              const fmt = (v) => formatCurrency(v, userCurrency)
 
               return (
                 <motion.div
@@ -162,57 +163,57 @@ export default function InvestPage() {
                 >
                   <div
                     onClick={() => selectPlan(plan)}
-                    className={`relative overflow-hidden rounded-2xl border cursor-pointer transition-all duration-200 group hover:-translate-y-0.5 ${
+                    className={`relative overflow-hidden rounded-2xl border cursor-pointer transition-all duration-200 hover:-translate-y-0.5 ${
                       isSelected
-                        ? `${colors.border} shadow-lg shadow-${colors.badge}/10 ring-1 ring-white/20`
-                        : 'border-white/5 hover:border-white/10'
+                        ? 'border-indigo-500/50 shadow-lg shadow-indigo-500/10 ring-1 ring-white/20'
+                        : 'border-white/10 hover:border-white/30'
                     } bg-[#131A28]`}
                   >
                     {/* Top accent bar */}
-                    <div className={`h-1.5 w-full bg-gradient-to-r ${colors.badge} opacity-80`} />
+                    <div className={`h-1 w-full bg-gradient-to-r ${colors.badge} opacity-80`} />
 
-                    <div className="p-5 space-y-4">
+                    <div className="p-4 space-y-3">
                       {/* Header */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className={`w-9 h-9 rounded-xl ${colors.light} flex items-center justify-center`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`w-8 h-8 rounded-xl ${colors.light} flex items-center justify-center shrink-0`}>
                             <Crown className={`w-4 h-4 ${colors.text}`} />
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-white">{plan.name}</p>
-                            <p className="text-[10px] text-text-muted">VIP Tier {i + 1}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-white truncate">{plan.name}</p>
+                            <p className="text-[10px] text-text-muted">Tier {i + 1}</p>
                           </div>
                         </div>
-                        <div className={`px-2.5 py-0.5 rounded-full ${colors.light} border ${colors.border}`}>
-                          <span className={`text-[10px] font-bold ${colors.text}`}>{plan.daily_return}% daily</span>
+                        <div className={`px-2 py-0.5 rounded-full ${colors.light} border ${colors.border} shrink-0`}>
+                          <span className={`text-[10px] font-bold ${colors.text}`}>{plan.daily_return}%</span>
                         </div>
                       </div>
 
                       {/* Amount */}
-                      <div className="text-center py-2">
-                        <p className="text-xs text-text-muted mb-1">Investment</p>
-                        <p className="text-2xl font-bold text-white">{formatCurrency(plan.min_investment, userCurrency)}</p>
+                      <div className="text-center py-1">
+                        <p className="text-[10px] text-text-muted mb-0.5">Investment</p>
+                        <p className="text-xl font-bold text-white leading-tight truncate">{fmt(plan.min_investment)}</p>
                       </div>
 
                       {/* Stats Grid */}
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="text-center p-2 rounded-xl bg-white/5">
-                          <p className="text-[10px] text-text-muted">Daily</p>
-                          <p className="text-xs font-bold text-emerald-400">+{formatCurrency(dailyReturn, userCurrency)}</p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        <div className="text-center p-1.5 rounded-xl bg-white/5 min-w-0">
+                          <p className="text-[9px] text-text-muted truncate">Daily</p>
+                          <p className="text-[11px] font-bold text-emerald-400 truncate">+{fmt(dailyReturn)}</p>
                         </div>
-                        <div className="text-center p-2 rounded-xl bg-white/5">
-                          <p className="text-[10px] text-text-muted">Total Earn</p>
-                          <p className="text-xs font-bold text-emerald-400">+{formatCurrency(totalReturn, userCurrency)}</p>
+                        <div className="text-center p-1.5 rounded-xl bg-white/5 min-w-0">
+                          <p className="text-[9px] text-text-muted truncate">Total</p>
+                          <p className="text-[11px] font-bold text-emerald-400 truncate">+{fmt(totalReturn)}</p>
                         </div>
-                        <div className="text-center p-2 rounded-xl bg-white/5">
-                          <p className="text-[10px] text-text-muted">Payout</p>
-                          <p className="text-xs font-bold text-white">{formatCurrency(totalPayout, userCurrency)}</p>
+                        <div className="text-center p-1.5 rounded-xl bg-white/5 min-w-0">
+                          <p className="text-[9px] text-text-muted truncate">Payout</p>
+                          <p className="text-[11px] font-bold text-white truncate">{fmt(totalPayout)}</p>
                         </div>
                       </div>
 
                       {/* Select CTA */}
                       <Button
-                        className="w-full text-xs"
+                        className="w-full text-[11px]"
                         variant={isSelected ? 'primary' : 'outline'}
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); selectPlan(plan) }}
