@@ -10,7 +10,7 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
-  const { login } = useAuth()
+  const { login, updateUser } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
 
@@ -23,6 +23,7 @@ export default function AdminLoginPage() {
       // Verify admin access by hitting the backend — it will 403 if not admin
       try {
         await api.get('/admin/dashboard')
+        updateUser({ role: 'admin' })
         toast('Welcome back, Administrator!', 'success')
         navigate('/admin')
       } catch (adminErr) {

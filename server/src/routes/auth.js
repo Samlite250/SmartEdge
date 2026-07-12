@@ -7,109 +7,115 @@ router.post('/register', async (req, res) => {
   try {
     const { email, password, fullName, username, phone, country, referralCode } = req.body;
 
-    const { createClient } = require('@supabase/supabase-js');
     const config = require('../config');
-    // Use admin client (service key) for privileged operations
-    const adminClient = createClient(config.supabase.url, config.supabase.serviceKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    });
+    const isMock = !config.supabase.url || config.supabase.url.includes('your-project');
 
-    const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,  // Auto-confirm so user can login immediately
-      user_metadata: { full_name: fullName, username },
-    });
+    let userId;
 
-    if (authError) return res.status(400).json({ error: authError.message });
+    if (isMock) {
+      // Mock mode: create auth user via mock signUp
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName, username } },
+      });
+      if (authError) return res.status(400).json({ error: authError.message });
+      userId = authData.user.id;
+    } else {
+      // Real Supabase: use admin client for privileged operations
+      const { createClient } = require('@supabase/supabase-js');
+      const adminClient = createClient(config.supabase.url, config.supabase.serviceKey, {
+        auth: { autoRefreshToken: false, persistSession: false }
+      });
 
-    if (authData.user) {
-      const userCurrency = getCountryCurrency(country);
+      const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: fullName, username },
+      });
+      if (authError) return res.status(400).json({ error: authError.message });
+      userId = authData.user.id;
+    }
 
-      // Check if profile was already created (e.g. by database trigger)
-      const { data: existingProfile } = await supabase
+    const userCurrency = getCountryCurrency(country);
+
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    let profileError;
+    if (existingProfile) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          username,
+          phone,
+          country: country || 'International',
+          currency: userCurrency,
+        })
+        .eq('id', userId);
+      profileError = error;
+    } else {
+      const { error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email,
+          full_name: fullName,
+          username,
+          phone,
+          country: country || 'International',
+          currency: userCurrency,
+          role: 'user',
+          referral_code: generateReferralCode(),
+        });
+      profileError = error;
+    }
+
+    if (profileError) return res.status(400).json({ error: profileError.message });
+
+    if (referralCode) {
+      const { data: referrer } = await supabase
         .from('profiles')
         .select('id')
-        .eq('id', authData.user.id)
-        .maybeSingle();
+        .eq('referral_code', referralCode)
+        .single();
 
-      let profileError;
-      if (existingProfile) {
-        // Update existing profile (especially country, currency, phone, full_name, username)
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            full_name: fullName,
-            username,
-            phone,
-            country: country || 'International',
-            currency: userCurrency,
-          })
-          .eq('id', authData.user.id);
-        profileError = error;
-      } else {
-        // Insert new profile
-        const { error } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            email,
-            full_name: fullName,
-            username,
-            phone,
-            country: country || 'International',
-            currency: userCurrency,
-            role: 'user',
-            referral_code: generateReferralCode(),
-          });
-        profileError = error;
-      }
-
-      if (profileError) return res.status(400).json({ error: profileError.message });
-
-      if (referralCode) {
-        const { data: referrer } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('referral_code', referralCode)
-          .single();
-
-        if (referrer) {
-          await supabase.from('referrals').insert({
-            referrer_id: referrer.id,
-            referred_id: authData.user.id,
-            bonus: 0,
-          });
-        }
-      }
-
-      // Check if wallet was already created (e.g. by database trigger)
-      const { data: existingWallet } = await supabase
-        .from('wallets')
-        .select('id')
-        .eq('user_id', authData.user.id)
-        .maybeSingle();
-
-      if (!existingWallet) {
-        await supabase.from('wallets').insert({
-          user_id: authData.user.id,
-          balance: 0,
-          currency: userCurrency,
+      if (referrer) {
+        await supabase.from('referrals').insert({
+          referrer_id: referrer.id,
+          referred_id: userId,
+          bonus: 0,
         });
-      } else {
-        // Update currency if needed
-        await supabase
-          .from('wallets')
-          .update({
-            currency: userCurrency,
-          })
-          .eq('user_id', authData.user.id);
       }
+    }
+
+    const { data: existingWallet } = await supabase
+      .from('wallets')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!existingWallet) {
+      await supabase.from('wallets').insert({
+        user_id: userId,
+        balance: 0,
+        currency: userCurrency,
+      });
+    } else {
+      await supabase
+        .from('wallets')
+        .update({ currency: userCurrency })
+        .eq('user_id', userId);
     }
 
     res.status(201).json({
       message: 'Registration successful. You can now log in.',
-      user: authData.user,
+      user: { id: userId, email },
     });
   } catch (error) {
     console.error('Registration error:', error);
