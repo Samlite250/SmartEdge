@@ -15,6 +15,7 @@ async function processDailyReturns() {
 
     for (const inv of investments) {
       const earnings = Number(inv.daily_return);
+      if (isNaN(earnings) || earnings <= 0) continue;
 
       const { data: wallet } = await supabase
         .from('wallets')

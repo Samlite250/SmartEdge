@@ -11,7 +11,7 @@ import api from '../lib/api'
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ email: '', password: '', remember: false })
   const { login } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
@@ -88,7 +88,7 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm text-text-secondary">
-                <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                <input type="checkbox" checked={form.remember} onChange={e => setForm({...form, remember: e.target.checked})} className="rounded border-border text-primary focus:ring-primary" />
                 Remember me
               </label>
               <Link to="/forgot-password" className="text-sm text-primary hover:underline">

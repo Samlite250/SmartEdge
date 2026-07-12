@@ -92,8 +92,7 @@ export default function AdminSetupPage() {
                         />
 
                         <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600">
-                            <strong>Default secret:</strong> <code className="font-mono">smartedge-setup-2025</code><br />
-                            Set <code>SETUP_SECRET</code> env var on your server to change it.
+                            Contact the server administrator to obtain the setup secret key.
                         </div>
 
                         <Button type="submit" className="w-full" loading={loading}>

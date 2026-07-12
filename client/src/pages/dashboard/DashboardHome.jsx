@@ -18,12 +18,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 
-const holdings = [
-  { name: 'Bitcoin', symbol: 'BTC', amount: 0.0425, logo: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png' },
-  { name: 'Ethereum', symbol: 'ETH', amount: 1.85, logo: 'https://cryptologos.cc/logos/ethereum-eth-logo.png' },
-  { name: 'Solana', symbol: 'SOL', amount: 12.5, logo: 'https://cryptologos.cc/logos/solana-sol-logo.png' },
-  { name: 'Tether', symbol: 'USDT', amount: 250.00, logo: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
-]
+const holdings = []
 
 const marketCoins = [
   { name: 'Bitcoin', symbol: 'BTC', price: '$67,432.10', change: '+2.4%', up: true, logo: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png' },

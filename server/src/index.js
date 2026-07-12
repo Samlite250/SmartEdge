@@ -29,8 +29,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow server-to-server requests (no origin) and any vercel.app deployment
-    if (!origin || allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error(`CORS not allowed for origin: ${origin}`));
@@ -50,6 +49,13 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+const loginLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  message: { error: 'Too many login attempts. Please try again in a minute.' },
+});
+app.use('/api/auth/login', loginLimiter);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/investments', investmentRoutes);
@@ -66,9 +72,8 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error('[Server Error]', err.message, err.stack);
-  const isDev = config.nodeEnv !== 'production';
-  res.status(500).json({ error: isDev ? err.message : 'Internal server error' });
+  console.error('[Server Error]', err.message, config.nodeEnv === 'development' ? err.stack : '');
+  res.status(500).json({ error: config.nodeEnv === 'development' ? err.message : 'Internal server error' });
 });
 
 app.use((req, res) => {

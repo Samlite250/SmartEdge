@@ -10,8 +10,10 @@ const config = require('../config');
 router.post('/setup-admin', async (req, res) => {
   try {
     const { email, secret } = req.body;
-    const expectedSecret = process.env.SETUP_SECRET || 'smartedge-setup-2025';
-    if (secret !== expectedSecret) {
+    if (!process.env.SETUP_SECRET) {
+      return res.status(500).json({ error: 'SETUP_SECRET environment variable is not configured on the server' });
+    }
+    if (secret !== process.env.SETUP_SECRET) {
       return res.status(403).json({ error: 'Invalid setup secret' });
     }
     if (!email) return res.status(400).json({ error: 'Email is required' });
@@ -217,6 +219,21 @@ router.put('/deposits/:id/approve', async (req, res) => {
       .single();
 
     if (!deposit) return res.status(404).json({ error: 'Deposit not found' });
+    if (deposit.status !== 'pending') return res.status(400).json({ error: 'Deposit is not pending' });
+
+    const { data: settings } = await supabase
+      .from('settings')
+      .select('min_deposit, max_deposit')
+      .single();
+
+    if (settings) {
+      if (settings.min_deposit && Number(deposit.amount) < Number(settings.min_deposit)) {
+        return res.status(400).json({ error: `Deposit amount below minimum (${settings.min_deposit})` });
+      }
+      if (settings.max_deposit && Number(deposit.amount) > Number(settings.max_deposit)) {
+        return res.status(400).json({ error: `Deposit amount exceeds maximum (${settings.max_deposit})` });
+      }
+    }
 
     const { data, error } = await supabase
       .from('deposits')
@@ -271,6 +288,29 @@ router.get('/withdrawals', async (req, res) => {
 
 router.put('/withdrawals/:id/approve', async (req, res) => {
   try {
+    const { data: withdrawal } = await supabase
+      .from('withdrawals')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!withdrawal) return res.status(404).json({ error: 'Withdrawal not found' });
+    if (withdrawal.status !== 'pending') return res.status(400).json({ error: 'Withdrawal is not pending' });
+
+    const { data: wallet } = await supabase
+      .from('wallets')
+      .select('*')
+      .eq('user_id', withdrawal.user_id)
+      .single();
+
+    if (!wallet || Number(wallet.balance) < Number(withdrawal.amount)) {
+      return res.status(400).json({ error: 'Insufficient balance to approve withdrawal' });
+    }
+
+    await supabase.from('wallets').update({
+      balance: Number(wallet.balance) - Number(withdrawal.amount),
+    }).eq('id', wallet.id);
+
     const { data, error } = await supabase
       .from('withdrawals')
       .update({ status: 'approved' })
@@ -297,6 +337,8 @@ router.put('/withdrawals/:id/reject', async (req, res) => {
       .eq('id', req.params.id)
       .single();
 
+    if (!withdrawal) return res.status(404).json({ error: 'Withdrawal not found' });
+
     const { data, error } = await supabase
       .from('withdrawals')
       .update({ status: 'rejected' })
@@ -305,18 +347,6 @@ router.put('/withdrawals/:id/reject', async (req, res) => {
       .single();
 
     if (error) return res.status(400).json({ error: error.message });
-
-    const { data: wallet } = await supabase
-      .from('wallets')
-      .select('*')
-      .eq('user_id', withdrawal.user_id)
-      .single();
-
-    if (wallet) {
-      await supabase.from('wallets').update({
-        balance: Number(wallet.balance) + Number(withdrawal.amount),
-      }).eq('id', wallet.id);
-    }
 
     await supabase.from('transactions').update({ status: 'failed' })
       .eq('reference', data.reference);
