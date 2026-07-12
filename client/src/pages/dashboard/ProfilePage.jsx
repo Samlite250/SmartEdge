@@ -1,20 +1,25 @@
 import { useState } from 'react'
-import { User, Mail, Phone, Globe, Shield, Calendar, Lock, Save, KeyRound } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { User, Mail, Phone, Globe, Shield, Calendar, Lock, Save, KeyRound, LogOut } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { CountrySelect } from '../../components/ui/CountrySelect'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../components/ui/Toast'
 import { userApi } from '../../services/api'
 import { formatDate, getInitials } from '../../lib/utils'
+import { getCountryCurrency } from '../../lib/countries'
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, logout } = useAuth()
   const toast = useToast()
+  const navigate = useNavigate()
 
   const [detailsForm, setDetailsForm] = useState({
     fullName: user?.full_name || '',
     phone: user?.phone || '',
+    country: user?.country || '',
   })
   const [passwordForm, setPasswordForm] = useState({
     newPassword: '',
@@ -31,9 +36,12 @@ export default function ProfilePage() {
     setUpdatingDetails(true)
     try {
       const updated = await userApi.updateProfile(detailsForm)
+      const currency = getCountryCurrency(detailsForm.country)
       updateUser({
         full_name: updated.full_name,
         phone: updated.phone,
+        country: updated.country,
+        currency: updated.currency || currency,
       })
       toast('Profile details updated successfully!', 'success')
     } catch (err) {
@@ -41,6 +49,11 @@ export default function ProfilePage() {
     } finally {
       setUpdatingDetails(false)
     }
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
   }
 
   const handleChangePassword = async (e) => {
@@ -118,6 +131,18 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <Button
+                variant="outline"
+                className="w-full border-danger/30 text-danger hover:bg-danger/10 hover:border-danger"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-4 h-4 mr-2" /> Sign Out
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Column: Profile Edit Forms */}
@@ -145,6 +170,10 @@ export default function ProfilePage() {
                     onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })}
                   />
                 </div>
+                <CountrySelect
+                  value={detailsForm.country}
+                  onChange={country => setDetailsForm({ ...detailsForm, country })}
+                />
                 <div className="flex justify-end">
                   <Button type="submit" loading={updatingDetails}>
                     <Save className="w-4 h-4 mr-2" /> Save Changes

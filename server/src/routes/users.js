@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
 const { authenticate } = require('../middleware/auth');
+const { getCountryCurrency } = require('../utils/helpers');
 
 router.get('/profile', authenticate, async (req, res) => {
   try {
@@ -20,12 +21,16 @@ router.get('/profile', authenticate, async (req, res) => {
 
 router.put('/profile', authenticate, async (req, res) => {
   try {
-    const { fullName, phone, notificationSettings, language } = req.body;
+    const { fullName, phone, country, notificationSettings, language } = req.body;
     const updates = {};
     if (fullName) updates.full_name = fullName;
     if (phone) updates.phone = phone;
     if (notificationSettings) updates.notification_settings = notificationSettings;
     if (language) updates.language = language;
+    if (country) {
+      updates.country = country;
+      updates.currency = getCountryCurrency(country);
+    }
 
     const { data, error } = await supabase
       .from('profiles')
@@ -35,6 +40,12 @@ router.put('/profile', authenticate, async (req, res) => {
       .single();
 
     if (error) return res.status(400).json({ error: error.message });
+
+    if (country) {
+      const userCurrency = getCountryCurrency(country);
+      await supabase.from('wallets').update({ currency: userCurrency }).eq('user_id', req.user.id);
+    }
+
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: 'Failed to update profile' });
