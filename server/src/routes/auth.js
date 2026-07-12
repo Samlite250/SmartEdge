@@ -162,7 +162,9 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('[Login Error]', error?.message || error);
-    res.status(500).json({ error: process.env.NODE_ENV === 'development' ? error?.message : 'Login failed' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Login failed' });
+    }
   }
 });
 
