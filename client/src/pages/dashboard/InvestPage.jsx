@@ -192,8 +192,6 @@ export default function InvestPage() {
   const selectPlan = (plan) => {
     setSelected(plan)
     setAmount(String(plan.min_investment))
-    // Scroll to form
-    setTimeout(() => document.getElementById('invest-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
   }
 
   const handleInvest = async () => {
@@ -310,149 +308,148 @@ export default function InvestPage() {
       {tab === 'plans' && (
         <div className="space-y-6">
 
-          {/* Plan grid */}
-          {loading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
-            </div>
-          ) : plans.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="p-5 rounded-3xl bg-white/4 border border-white/8 mb-4">
-                <BarChart3 className="w-10 h-10 text-white/20" />
-              </div>
-              <p className="text-white/50 font-medium">No investment plans available</p>
-              <p className="text-white/30 text-sm mt-1">Plans may not be configured for your region yet.</p>
-            </div>
-          ) : (
-            <>
-              {isVIP && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Crown className="w-4 h-4 text-amber-400" />
-                  <span className="font-bold text-white">VIP Tiers</span>
-                  <span className="text-white/30">·</span>
-                  <span className="text-white/40">{plans.length} levels available for {country}</span>
-                </div>
-              )}
-
-              <div className={`grid gap-4 ${isVIP ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
-                {plans.map((plan, i) => {
-                  const colors = TIER_COLORS[i % TIER_COLORS.length]
-                  const isChosen = selected?.id === plan.id
-                  const dailyRet = plan.min_investment * plan.daily_return / 100
-                  const totalRet = dailyRet * plan.duration
-                  const payout = plan.min_investment + totalRet
-                  const isPopular = !isVIP && i === 2
-
-                  return (
-                    <motion.div
-                      key={plan.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04 }}
-                    >
-                      <div
-                        onClick={() => selectPlan(plan)}
-                        className={`relative overflow-hidden rounded-2xl border transition-all duration-200 cursor-pointer ${isChosen
-                          ? `border-white/20 shadow-2xl ${colors.glow} ring-1 ${colors.ring} -translate-y-1`
-                          : 'border-white/6 hover:border-white/15 hover:-translate-y-0.5'
-                          } bg-[#0f1623]`}
-                      >
-                        {/* Top accent bar */}
-                        <div className={`h-1 w-full bg-gradient-to-r ${colors.gradient}`} />
-
-                        {/* Popular badge */}
-                        {isPopular && (
-                          <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg">
-                            <Award className="w-2.5 h-2.5 text-white" />
-                            <span className="text-[9px] font-extrabold text-white uppercase tracking-wide">Popular</span>
-                          </div>
-                        )}
-
-
-
-                        <div className="p-5 space-y-4">
-                          {/* Header row */}
-                          <div className="flex items-center justify-between gap-2">
-                            <div>
-                              <p className="font-bold text-white text-sm leading-tight">{plan.name}</p>
-                              {isVIP
-                                ? <p className="text-[10px] text-white/35 mt-0.5">Tier {i + 1}</p>
-                                : <p className="text-[10px] text-white/35 mt-0.5 capitalize">{plan.risk_level} risk</p>
-                              }
-                            </div>
-                            <span className={`px-2.5 py-1 rounded-full border text-[11px] font-bold ${colors.badge}`}>
-                              {plan.daily_return}%/day
-                            </span>
-                          </div>
-
-                          {/* Investment range */}
-                          <div className="p-3 rounded-xl bg-white/4 border border-white/5">
-                            <p className="text-[10px] text-white/35 mb-0.5">
-                              {isVIP ? 'Fixed Amount' : 'Investment Range'}
-                            </p>
-                            <p className="text-lg font-extrabold text-white leading-tight">
-                              {fmt(plan.min_investment)}
-                              {!isVIP && plan.max_investment && (
-                                <span className="text-sm font-medium text-white/35"> — {fmt(plan.max_investment)}</span>
-                              )}
-                            </p>
-                          </div>
-
-                          {/* Stats grid */}
-                          <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="p-2.5 rounded-xl bg-white/4 border border-white/5">
-                              <p className="text-[9px] text-white/35 mb-0.5">Daily</p>
-                              <p className={`text-[11px] font-bold ${colors.stat}`}>+{fmt(dailyRet)}</p>
-                            </div>
-                            <div className="p-2.5 rounded-xl bg-white/4 border border-white/5">
-                              <p className="text-[9px] text-white/35 mb-0.5">Total</p>
-                              <p className="text-[11px] font-bold text-emerald-400">+{fmt(totalRet)}</p>
-                            </div>
-                            <div className="p-2.5 rounded-xl bg-white/4 border border-white/5">
-                              <p className="text-[9px] text-white/35 mb-0.5">{plan.duration}d ROI</p>
-                              <p className="text-[11px] font-bold text-white">{fmt(payout)}</p>
-                            </div>
-                          </div>
-
-                          {/* Features (non-VIP) */}
-                          {!isVIP && plan.features?.length > 0 && (
-                            <ul className="space-y-1.5">
-                              {plan.features.slice(0, 3).map(f => (
-                                <li key={f} className="flex items-center gap-2 text-[11px] text-white/45">
-                                  <Check className="w-3 h-3 text-emerald-500 flex-shrink-0" />{f}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-
-                          {/* CTA */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); selectPlan(plan) }}
-                            className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 ${isChosen
-                              ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg ${colors.glow}`
-                              : 'bg-white/6 text-white/70 hover:bg-white/10 border border-white/8'
-                              }`}
-                          >
-                            {isChosen ? (
-                              <><CheckCircle2 className="w-3.5 h-3.5" /> Selected</>
-                            ) : (
-                              <>Select Plan <ChevronRight className="w-3.5 h-3.5" /></>
-                            )}
-                          </button>
-                        </div>
+          {/* Plan grid — hidden when a plan is selected */}
+          <AnimatePresence mode="wait">
+            {!selected && (
+              <motion.div
+                key="plan-grid"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+              >
+                {loading ? (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
+                  </div>
+                ) : plans.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="p-5 rounded-3xl bg-white/4 border border-white/8 mb-4">
+                      <BarChart3 className="w-10 h-10 text-white/20" />
+                    </div>
+                    <p className="text-white/50 font-medium">No investment plans available</p>
+                    <p className="text-white/30 text-sm mt-1">Plans may not be configured for your region yet.</p>
+                  </div>
+                ) : (
+                  <>
+                    {isVIP && (
+                      <div className="flex items-center gap-2 text-sm mb-4">
+                        <Crown className="w-4 h-4 text-amber-400" />
+                        <span className="font-bold text-white">VIP Tiers</span>
+                        <span className="text-white/30">·</span>
+                        <span className="text-white/40">{plans.length} levels available for {country}</span>
                       </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
-            </>
-          )}
+                    )}
 
-          {/* ── Investment form (appears when plan selected) ── */}
+                    <div className={`grid gap-4 ${isVIP ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
+                      {plans.map((plan, i) => {
+                        const colors = TIER_COLORS[i % TIER_COLORS.length]
+                        const dailyRet = plan.min_investment * plan.daily_return / 100
+                        const totalRet = dailyRet * plan.duration
+                        const payout = plan.min_investment + totalRet
+                        const isPopular = !isVIP && i === 2
+
+                        return (
+                          <motion.div
+                            key={plan.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.04 }}
+                          >
+                            <div
+                              onClick={() => selectPlan(plan)}
+                              className={`relative overflow-hidden rounded-2xl border border-white/6 hover:border-white/15 hover:-translate-y-0.5 bg-[#0f1623] transition-all duration-200 cursor-pointer`}
+                            >
+                              {/* Top accent bar */}
+                              <div className={`h-1 w-full bg-gradient-to-r ${colors.gradient}`} />
+
+                              {/* Popular badge */}
+                              {isPopular && (
+                                <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg">
+                                  <Award className="w-2.5 h-2.5 text-white" />
+                                  <span className="text-[9px] font-extrabold text-white uppercase tracking-wide">Popular</span>
+                                </div>
+                              )}
+
+                              <div className="p-5 space-y-4">
+                                {/* Header row */}
+                                <div className="flex items-center justify-between gap-2">
+                                  <div>
+                                    <p className="font-bold text-white text-sm leading-tight">{plan.name}</p>
+                                    {isVIP
+                                      ? <p className="text-[10px] text-white/35 mt-0.5">Tier {i + 1}</p>
+                                      : <p className="text-[10px] text-white/35 mt-0.5 capitalize">{plan.risk_level} risk</p>
+                                    }
+                                  </div>
+                                  <span className={`px-2.5 py-1 rounded-full border text-[11px] font-bold ${colors.badge}`}>
+                                    {plan.daily_return}%/day
+                                  </span>
+                                </div>
+
+                                {/* Investment range */}
+                                <div className="p-3 rounded-xl bg-white/4 border border-white/5">
+                                  <p className="text-[10px] text-white/35 mb-0.5">
+                                    {isVIP ? 'Fixed Amount' : 'Investment Range'}
+                                  </p>
+                                  <p className="text-lg font-extrabold text-white leading-tight">
+                                    {fmt(plan.min_investment)}
+                                    {!isVIP && plan.max_investment && (
+                                      <span className="text-sm font-medium text-white/35"> — {fmt(plan.max_investment)}</span>
+                                    )}
+                                  </p>
+                                </div>
+
+                                {/* Stats grid */}
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                  <div className="p-2.5 rounded-xl bg-white/4 border border-white/5">
+                                    <p className="text-[9px] text-white/35 mb-0.5">Daily</p>
+                                    <p className={`text-[11px] font-bold ${colors.stat}`}>+{fmt(dailyRet)}</p>
+                                  </div>
+                                  <div className="p-2.5 rounded-xl bg-white/4 border border-white/5">
+                                    <p className="text-[9px] text-white/35 mb-0.5">Total</p>
+                                    <p className="text-[11px] font-bold text-emerald-400">+{fmt(totalRet)}</p>
+                                  </div>
+                                  <div className="p-2.5 rounded-xl bg-white/4 border border-white/5">
+                                    <p className="text-[9px] text-white/35 mb-0.5">{plan.duration}d ROI</p>
+                                    <p className="text-[11px] font-bold text-white">{fmt(payout)}</p>
+                                  </div>
+                                </div>
+
+                                {/* Features (non-VIP) */}
+                                {!isVIP && plan.features?.length > 0 && (
+                                  <ul className="space-y-1.5">
+                                    {plan.features.slice(0, 3).map(f => (
+                                      <li key={f} className="flex items-center gap-2 text-[11px] text-white/45">
+                                        <Check className="w-3 h-3 text-emerald-500 flex-shrink-0" />{f}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+
+                                {/* CTA */}
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); selectPlan(plan) }}
+                                  className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-white/6 text-white/70 hover:bg-white/10 border border-white/8 transition-all duration-200"
+                                >
+                                  Select Plan <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── Investment form (replaces plan grid when plan selected) ── */}
           <AnimatePresence>
             {selected && (
               <motion.div
-                id="invest-form"
+                key="invest-form"
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20, scale: 0.99 }}
@@ -466,6 +463,14 @@ export default function InvestPage() {
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-3">
+                        {/* Back button */}
+                        <button
+                          onClick={() => { setSelected(null); setAmount('') }}
+                          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/6 transition-colors"
+                          title="Back to plans"
+                        >
+                          <ChevronRight className="w-4 h-4 text-white/40 rotate-180" />
+                        </button>
                         <div className={`p-2.5 rounded-xl bg-gradient-to-br ${TIER_COLORS[plans.findIndex(p => p.id === selected.id) % TIER_COLORS.length]?.gradient || 'from-indigo-500 to-violet-600'} shadow-lg`}>
                           <TrendingUp className="w-5 h-5 text-white" />
                         </div>
@@ -479,6 +484,7 @@ export default function InvestPage() {
                       <button
                         onClick={() => { setSelected(null); setAmount('') }}
                         className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/6 transition-colors"
+                        title="Close"
                       >
                         <X className="w-4 h-4 text-white/40" />
                       </button>
@@ -531,10 +537,10 @@ export default function InvestPage() {
                                     onClick={() => !unaffordable && setAmount(String(val))}
                                     title={unaffordable ? `Insufficient balance — you have ${fmt(balance)}` : undefined}
                                     className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150 ${unaffordable
-                                        ? 'bg-white/2 text-white/20 border-white/5 cursor-not-allowed line-through'
-                                        : isActive
-                                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20'
-                                          : 'bg-white/5 text-white/50 border-white/8 hover:border-indigo-500/30 hover:bg-indigo-500/8 hover:text-white/80'
+                                      ? 'bg-white/2 text-white/20 border-white/5 cursor-not-allowed line-through'
+                                      : isActive
+                                        ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20'
+                                        : 'bg-white/5 text-white/50 border-white/8 hover:border-indigo-500/30 hover:bg-indigo-500/8 hover:text-white/80'
                                       }`}
                                   >
                                     {fmt(val)}
