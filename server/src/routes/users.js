@@ -67,7 +67,7 @@ router.get('/dashboard', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const safeQuery = (promise) => promise.catch(err => ({ data: null, error: err }));
+    const safeQuery = (promise) => Promise.resolve(promise).catch(err => ({ data: null, error: err }));
 
     const [wallet, investments, transactions, deposits, referrals] = await Promise.all([
       safeQuery(supabase.from('wallets').select('*').eq('user_id', userId).limit(1)),
