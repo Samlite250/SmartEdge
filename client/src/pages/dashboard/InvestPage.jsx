@@ -10,6 +10,7 @@ import { useToast } from '../../components/ui/Toast'
 import { investmentApi, userApi } from '../../services/api'
 import { formatCurrency } from '../../lib/utils'
 import { useAuth } from '../../hooks/useAuth'
+import { useNavigate } from 'react-router-dom'
 
 /* ─── Tier palette ─────────────────────────────────────────── */
 const TIER_COLORS = [
@@ -69,8 +70,8 @@ function ActiveInvestCard({ inv, currency, i }) {
               <p className="text-xs text-white/40 mt-0.5">Started {new Date(inv.start_date || inv.created_at).toLocaleDateString()}</p>
             </div>
             <span className={`text-[10px] font-semibold px-2 py-1 rounded-full border ${inv.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25' :
-                inv.status === 'completed' ? 'bg-sky-500/10 text-sky-400 border-sky-500/25' :
-                  'bg-white/5 text-white/40 border-white/10'
+              inv.status === 'completed' ? 'bg-sky-500/10 text-sky-400 border-sky-500/25' :
+                'bg-white/5 text-white/40 border-white/10'
               }`}>
               {inv.status === 'active' ? '● Active' : inv.status === 'completed' ? '✓ Completed' : inv.status}
             </span>
@@ -117,6 +118,7 @@ function ActiveInvestCard({ inv, currency, i }) {
 /* ─── Main page ─────────────────────────────────────────────── */
 export default function InvestPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [tab, setTab] = useState('plans')       // 'plans' | 'active'
   const [plans, setPlans] = useState([])
   const [active, setActive] = useState([])
@@ -286,8 +288,8 @@ export default function InvestPage() {
             key={t.key}
             onClick={() => { setTab(t.key); setSelected(null); setAmount('') }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === t.key
-                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25'
-                : 'text-white/40 hover:text-white/70'
+              ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25'
+              : 'text-white/40 hover:text-white/70'
               }`}
           >
             {t.icon}{t.label}
@@ -340,6 +342,10 @@ export default function InvestPage() {
                         const payout = plan.min_investment + totalRet
                         const isPopular = !isVIP && i === 2
 
+                        // Low Balance Mismatch Calculation
+                        const isLowBalance = balanceLoaded && balance < plan.min_investment
+                        const diff = plan.min_investment - balance
+
                         return (
                           <motion.div
                             key={plan.id}
@@ -348,7 +354,13 @@ export default function InvestPage() {
                             transition={{ delay: i * 0.04 }}
                           >
                             <div
-                              onClick={() => selectPlan(plan)}
+                              onClick={() => {
+                                if (isLowBalance) {
+                                  navigate(`/dashboard/wallet?action=deposit&amount=${diff}`)
+                                } else {
+                                  selectPlan(plan)
+                                }
+                              }}
                               className="relative overflow-hidden rounded-2xl border border-white/6 hover:border-white/15 hover:-translate-y-0.5 bg-[#0f1623] transition-all duration-200 cursor-pointer"
                             >
                               {/* Top accent bar */}
@@ -417,13 +429,33 @@ export default function InvestPage() {
                                   </ul>
                                 )}
 
-                                {/* CTA */}
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); selectPlan(plan) }}
-                                  className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-white/6 text-white/70 hover:bg-white/10 border border-white/8 transition-all duration-200"
-                                >
-                                  Select Plan <ChevronRight className="w-3.5 h-3.5" />
-                                </button>
+                                {/* Low Balance Mismatch Banner */}
+                                {isLowBalance && (
+                                  <div className="flex items-center gap-1.5 justify-center py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] font-semibold text-amber-400 animate-pulse">
+                                    <Lock className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                                    <span>Need {fmt(diff)} more to invest</span>
+                                  </div>
+                                )}
+
+                                {/* CTA Button: Green Background */}
+                                {isLowBalance ? (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      navigate(`/dashboard/wallet?action=deposit&amount=${diff}`)
+                                    }}
+                                    className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-md shadow-emerald-500/20 transition-all duration-200"
+                                  >
+                                    <Wallet className="w-3.5 h-3.5" /> Deposit & Invest <ChevronRight className="w-3.5 h-3.5" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); selectPlan(plan) }}
+                                    className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-md shadow-emerald-500/20 transition-all duration-200"
+                                  >
+                                    Select Plan <ChevronRight className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </motion.div>
@@ -515,8 +547,8 @@ export default function InvestPage() {
                             min={selected.min_investment}
                             max={selected.max_investment || undefined}
                             className={`w-full pl-11 pr-4 py-4 bg-white/5 border rounded-2xl text-2xl font-extrabold text-white focus:outline-none transition-all placeholder:text-white/10 ${amountError
-                                ? 'border-rose-500/50 focus:border-rose-500/70 focus:ring-4 focus:ring-rose-500/10'
-                                : 'border-white/10 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10'
+                              ? 'border-rose-500/50 focus:border-rose-500/70 focus:ring-4 focus:ring-rose-500/10'
+                              : 'border-white/10 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10'
                               }`}
                           />
                         </div>
@@ -535,10 +567,10 @@ export default function InvestPage() {
                                   key={val}
                                   onClick={() => !unaffordable && setAmount(String(val))}
                                   className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${isActive
-                                      ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20'
-                                      : unaffordable
-                                        ? 'bg-white/2 text-white/20 border-white/5 cursor-not-allowed line-through'
-                                        : 'bg-white/5 text-white/40 border-white/8 hover:bg-white/10 hover:text-white/70'
+                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20'
+                                    : unaffordable
+                                      ? 'bg-white/2 text-white/20 border-white/5 cursor-not-allowed line-through'
+                                      : 'bg-white/5 text-white/40 border-white/8 hover:bg-white/10 hover:text-white/70'
                                     }`}
                                 >
                                   {fmt(val)}
@@ -622,8 +654,8 @@ export default function InvestPage() {
                         onClick={handleInvest}
                         disabled={!canInvest || investing}
                         className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-bold transition-all ${canInvest && !investing
-                            ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0'
-                            : 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
+                          ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0'
+                          : 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
                           }`}
                       >
                         {investing ? (

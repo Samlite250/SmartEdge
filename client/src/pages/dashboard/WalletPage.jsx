@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom'
 import { Wallet, ArrowDownCircle, ArrowUpCircle, Copy, Banknote, Smartphone, X, Upload, Image as ImageIcon } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -11,6 +12,7 @@ import { useAuth } from '../../hooks/useAuth'
 
 export default function WalletPage() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [wallet, setWallet] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -18,6 +20,7 @@ export default function WalletPage() {
   const [depositMethods, setDepositMethods] = useState([])
   const [withdrawMethods, setWithdrawMethods] = useState([])
   const [form, setForm] = useState({ amount: '', paymentMethod: '', walletAddress: '', phoneNumber: '', payerName: '', payerPhone: '', proofImage: '' })
+
   const [proofPreview, setProofPreview] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const fileInputRef = useRef(null)
@@ -43,6 +46,20 @@ export default function WalletPage() {
   }
 
   useEffect(load, [])
+
+  useEffect(() => {
+    if (!loading) {
+      const action = searchParams.get('action')
+      const amt = searchParams.get('amount')
+      if (action === 'deposit') {
+        setMode('deposit')
+        if (amt) {
+          setForm(f => ({ ...f, amount: amt }))
+        }
+      }
+    }
+  }, [loading, searchParams])
+
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0]
