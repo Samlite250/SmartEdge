@@ -12,7 +12,7 @@ router.get('/methods', authenticate, async (req, res) => {
       .eq('id', req.user.id)
       .single();
 
-    const methods = getPaymentMethodsForCountry(profile?.country || 'International');
+    const methods = getPaymentMethodsForCountry(profile?.country);
     res.json(methods);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch methods' });
@@ -47,7 +47,7 @@ router.post('/', authenticate, async (req, res) => {
       status: 'pending',
       wallet_address: walletAddress || null,
       phone_number: phoneNumber || null,
-      country: profile?.country || 'International',
+      country: profile?.country,
     }).select().single();
 
     if (error) return res.status(400).json({ error: error.message });

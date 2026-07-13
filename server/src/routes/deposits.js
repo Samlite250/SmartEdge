@@ -40,7 +40,7 @@ router.post('/', authenticate, async (req, res) => {
       payment_method: paymentMethod,
       reference: generateDepositRef(),
       status: 'pending',
-      country: profile?.country || 'International',
+      country: profile?.country,
       metadata: {
         payer_name: payerName,
         payer_phone: payerPhone,

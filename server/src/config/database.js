@@ -1,4 +1,38 @@
 const config = require('./index');
+const fs = require('fs');
+const path = require('path');
+
+// Persist mock DB to disk so data survives server restarts
+const DB_PATH = path.join(__dirname, '..', '..', 'mock_db.json');
+
+function saveMockDb() {
+  try {
+    // Only save dynamic tables (exclude hardcoded reference data)
+    const toSave = {
+      profiles: db.profiles,
+      wallets: db.wallets,
+      transactions: db.transactions,
+      deposits: db.deposits,
+      withdrawals: db.withdrawals,
+      referrals: db.referrals,
+      user_investments: db.user_investments,
+    };
+    fs.writeFileSync(DB_PATH, JSON.stringify(toSave, null, 2));
+  } catch (e) {
+    // Ignore write errors in dev
+  }
+}
+
+function loadMockDb() {
+  try {
+    if (fs.existsSync(DB_PATH)) {
+      return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+    }
+  } catch (e) {
+    // Ignore read errors
+  }
+  return null;
+}
 
 const db = {
   wallets: [
@@ -180,7 +214,35 @@ const db = {
   ],
 };
 
-const sessions = new Map();
+// Load persisted data and merge into db
+const persisted = loadMockDb();
+if (persisted) {
+  // Merge persisted rows, avoiding duplicate ids
+  const mergeTable = (base, saved) => {
+    if (!saved) return base;
+    const ids = new Set(saved.map(r => r.id));
+    return [...saved, ...base.filter(r => !ids.has(r.id))];
+  };
+  db.profiles = mergeTable(db.profiles, persisted.profiles);
+  db.wallets = mergeTable(db.wallets, persisted.wallets);
+  db.transactions = mergeTable(db.transactions, persisted.transactions);
+  db.deposits = mergeTable(db.deposits, persisted.deposits);
+  db.withdrawals = mergeTable(db.withdrawals, persisted.withdrawals);
+  db.referrals = mergeTable(db.referrals, persisted.referrals);
+  db.user_investments = mergeTable(db.user_investments, persisted.user_investments);
+}
+
+// Token helpers: encode userId in base64 so getUser works across restarts without a sessions Map
+function encodeToken(userId) {
+  return 'mock_' + Buffer.from(JSON.stringify({ uid: userId, ts: Date.now() })).toString('base64');
+}
+function decodeToken(token) {
+  try {
+    if (!token || !token.startsWith('mock_')) return null;
+    const payload = JSON.parse(Buffer.from(token.slice(5), 'base64').toString('utf8'));
+    return payload.uid || null;
+  } catch { return null; }
+}
 
 function resolveSubQuery(table, selectStr) {
   if (!selectStr || selectStr === '*') return;
@@ -281,6 +343,7 @@ class QueryBuilder {
           created_at: item.created_at || new Date().toISOString(),
         }));
         db[this.table].push(...items);
+        saveMockDb();
 
         const result = this._singleMode ? { data: items[0] || null, error: null } : { data: items, error: null };
         return resolve(result);
@@ -291,6 +354,7 @@ class QueryBuilder {
         for (const item of items) {
           Object.assign(item, this._values, { updated_at: new Date().toISOString() });
         }
+        saveMockDb();
         const err = (items.length === 0 && !this._maybeSingleMode) ? { message: 'Not found', code: 'PGRST116' } : null;
         const result = this._singleMode
           ? { data: items[0] || null, error: err }
@@ -304,6 +368,7 @@ class QueryBuilder {
           const idx = db[this.table].indexOf(item);
           if (idx !== -1) db[this.table].splice(idx, 1);
         }
+        saveMockDb();
         return resolve({ data: items, error: null });
       }
 
@@ -404,8 +469,7 @@ const mockSupabase = {
         return { data: { user: null, session: null }, error: { message: 'Invalid credentials' } };
       }
 
-      const token = `dev_token_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-      sessions.set(token, profile.id);
+      const token = encodeToken(profile.id);
 
       return {
         data: {
@@ -419,7 +483,7 @@ const mockSupabase = {
     async signOut() { return { error: null } },
 
     async getUser(token) {
-      const userId = sessions.get(token);
+      const userId = decodeToken(token);
       if (!userId) return { data: { user: null }, error: { message: 'Invalid token' } };
       const profile = db.profiles.find(p => p.id === userId);
       if (!profile) return { data: { user: null }, error: { message: 'User not found' } };
@@ -429,12 +493,10 @@ const mockSupabase = {
     async resetPasswordForEmail() { return { data: {}, error: null } },
     async updateUser() { return { data: { user: {} }, error: null } },
     async refreshSession({ refresh_token }) {
-      // In mock mode, the refresh_token IS the access_token (same dev token)
-      const userId = sessions.get(refresh_token);
+      const userId = decodeToken(refresh_token);
       if (!userId) return { data: { session: null }, error: { message: 'Invalid refresh token' } };
-      const newToken = `dev_token_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-      sessions.delete(refresh_token);
-      sessions.set(newToken, userId);
+      // Issue a fresh token with updated timestamp
+      const newToken = encodeToken(userId);
       return { data: { session: { access_token: newToken, refresh_token: newToken, expires_in: 604800 } }, error: null };
     },
 

@@ -11,7 +11,7 @@ function normalizeUser(raw) {
     full_name: profile.full_name || raw.full_name || raw.email?.split('@')[0] || '',
     username: profile.username || raw.username || '',
     phone: profile.phone || raw.phone || '',
-    country: profile.country || raw.country || 'International',
+    country: profile.country || raw.country || '',
     currency: profile.currency || raw.currency || 'USD',
     role: profile.role || raw.role || 'user',
     status: profile.status || raw.status || 'active',
@@ -33,7 +33,7 @@ export function useAuth() {
 
   useEffect(() => {
     const token = localStorage.getItem('se_token')
-    if (token && !user) {
+    if (token) {
       setLoading(true)
       api.get('/users/profile')
         .then(res => {

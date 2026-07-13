@@ -1,20 +1,38 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
-const { generateDepositRef, generateReferralCode, getCountryCurrency } = require('../utils/helpers');
+const { getCountryCurrency, generateReferralCode } = require('../utils/helpers');
+const config = require('../config');
+
+const isMock = process.env.USE_MOCK === 'true' || !config.supabase.url || config.supabase.url.includes('your-project');
+
+function getAuthClient() {
+  if (isMock) return supabase;
+  const { createClient } = require('@supabase/supabase-js');
+  return createClient(config.supabase.url, config.supabase.anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  });
+}
 
 router.post('/register', async (req, res) => {
   try {
     const { email, password, fullName, username, phone, country, referralCode } = req.body;
+    // Validate required country
+    if (!country) {
+      return res.status(400).json({ error: 'Country is required' });
+    }
 
     const config = require('../config');
     const isMock = !config.supabase.url || config.supabase.url.includes('your-project');
 
     let userId;
 
+    // Initialise adminClient based on environment
+    let adminClient;
     if (isMock) {
-      // Mock mode: create auth user via mock signUp
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Mock mode: reuse regular supabase client (no RLS)
+      adminClient = supabase;
+      const { data: authData, error: authError } = await adminClient.auth.signUp({
         email,
         password,
         options: { data: { full_name: fullName, username } },
@@ -24,10 +42,9 @@ router.post('/register', async (req, res) => {
     } else {
       // Real Supabase: use admin client for privileged operations
       const { createClient } = require('@supabase/supabase-js');
-      const adminClient = createClient(config.supabase.url, config.supabase.serviceKey, {
-        auth: { autoRefreshToken: false, persistSession: false }
+      adminClient = createClient(config.supabase.url, config.supabase.serviceKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
       });
-
       const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
         email,
         password,
@@ -40,7 +57,7 @@ router.post('/register', async (req, res) => {
 
     const userCurrency = getCountryCurrency(country);
 
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile } = await adminClient
       .from('profiles')
       .select('id')
       .eq('id', userId)
@@ -48,19 +65,19 @@ router.post('/register', async (req, res) => {
 
     let profileError;
     if (existingProfile) {
-      const { error } = await supabase
+      const { error } = await adminClient
         .from('profiles')
         .update({
           full_name: fullName,
           username,
           phone,
-          country: country || 'International',
+          country: country,
           currency: userCurrency,
         })
         .eq('id', userId);
       profileError = error;
     } else {
-      const { error } = await supabase
+      const { error } = await adminClient
         .from('profiles')
         .insert({
           id: userId,
@@ -68,7 +85,7 @@ router.post('/register', async (req, res) => {
           full_name: fullName,
           username,
           phone,
-          country: country || 'International',
+          country: country,
           currency: userCurrency,
           role: 'user',
           referral_code: generateReferralCode(),
@@ -79,7 +96,7 @@ router.post('/register', async (req, res) => {
     if (profileError) return res.status(400).json({ error: profileError.message });
 
     if (referralCode) {
-      const { data: referrer } = await supabase
+      const { data: referrer } = await adminClient
         .from('profiles')
         .select('id')
         .eq('referral_code', referralCode)
@@ -94,20 +111,20 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    const { data: existingWallet } = await supabase
+    const { data: existingWallet } = await adminClient
       .from('wallets')
       .select('id')
       .eq('user_id', userId)
       .maybeSingle();
 
     if (!existingWallet) {
-      await supabase.from('wallets').insert({
+      await adminClient.from('wallets').insert({
         user_id: userId,
         balance: 0,
         currency: userCurrency,
       });
     } else {
-      await supabase
+      await adminClient
         .from('wallets')
         .update({ currency: userCurrency })
         .eq('user_id', userId);
@@ -128,7 +145,8 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const authClient = getAuthClient();
+    const { data, error } = await authClient.auth.signInWithPassword({ email, password });
 
     if (error) {
       // If email is not confirmed, auto-confirm via admin API and retry login
@@ -145,7 +163,8 @@ router.post('/login', async (req, res) => {
           if (profile?.id) {
             await adminClient.auth.admin.updateUserById(profile.id, { email_confirm: true });
             // Retry login
-            const retry = await supabase.auth.signInWithPassword({ email, password });
+            const retryClient = getAuthClient();
+            const retry = await retryClient.auth.signInWithPassword({ email, password });
             if (!retry.error && retry.data?.session) {
               const { data: userProfile } = await supabase.from('profiles').select('*').eq('id', retry.data.user.id).single();
               return res.json({
@@ -178,7 +197,8 @@ router.post('/login', async (req, res) => {
 
 router.post('/logout', async (req, res) => {
   try {
-    const { error } = await supabase.auth.signOut();
+    const authClient = getAuthClient();
+    const { error } = await authClient.auth.signOut();
     if (error) return res.status(400).json({ error: error.message });
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
@@ -191,7 +211,8 @@ router.post('/refresh', async (req, res) => {
     const { refreshToken } = req.body;
     if (!refreshToken) return res.status(400).json({ error: 'Refresh token required' });
 
-    const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+    const authClient = getAuthClient();
+    const { data, error } = await authClient.auth.refreshSession({ refresh_token: refreshToken });
 
     if (error || !data?.session) {
       return res.status(401).json({ error: 'Session expired. Please log in again.' });
@@ -209,7 +230,8 @@ router.post('/refresh', async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const authClient = getAuthClient();
+    const { error } = await authClient.auth.resetPasswordForEmail(email);
     if (error) return res.status(400).json({ error: error.message });
     res.json({ message: 'Password reset email sent' });
   } catch (error) {
@@ -220,7 +242,12 @@ router.post('/forgot-password', async (req, res) => {
 router.post('/reset-password', async (req, res) => {
   try {
     const { accessToken, newPassword } = req.body;
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const { createClient } = require('@supabase/supabase-js');
+    const client = isMock ? supabase : createClient(config.supabase.url, config.supabase.anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${accessToken}` } }
+    });
+    const { error } = await client.auth.updateUser({ password: newPassword });
     if (error) return res.status(400).json({ error: error.message });
     res.json({ message: 'Password reset successfully' });
   } catch (error) {

@@ -33,7 +33,7 @@ export default function WalletPage() {
   useEffect(() => {
     if (mode === 'deposit') {
       const country = user?.country || user?.profile?.country
-      if (!country || country === 'International') {
+      if (!country) {
         setInstructions(null)
         return
       }

@@ -1,8 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../config/database');
+const supabase = require('../config/database'); // service key client — bypasses RLS
 const { authenticate } = require('../middleware/auth');
 const { getCountryCurrency } = require('../utils/helpers');
+const config = require('../config');
+
+const isMock = process.env.USE_MOCK === 'true' || !config.supabase?.url || config.supabase?.url?.includes('your-project');
+
+// Use service-key client (supabase) for all data queries — bypasses RLS entirely.
+// Only use a user-scoped client for auth operations that need user context (change-password).
+function getUserScopedClient(accessToken) {
+  if (isMock) return supabase;
+  const { createClient } = require('@supabase/supabase-js');
+  return createClient(config.supabase.url, config.supabase.anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    global: { headers: { Authorization: `Bearer ${accessToken}` } }
+  });
+}
 
 router.get('/profile', authenticate, async (req, res) => {
   try {
@@ -12,9 +26,13 @@ router.get('/profile', authenticate, async (req, res) => {
       .eq('id', req.user.id)
       .single();
 
-    if (error) return res.status(404).json({ error: 'Profile not found' });
+    if (error) {
+      console.error('[Profile Fetch Error]', error);
+      return res.status(404).json({ error: 'Profile not found' });
+    }
     res.json(data);
   } catch (error) {
+    console.error('[Profile Route Error]', error.message);
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
@@ -55,7 +73,9 @@ router.put('/profile', authenticate, async (req, res) => {
 router.post('/change-password', authenticate, async (req, res) => {
   try {
     const { newPassword } = req.body;
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    // Use user-scoped client so that auth.updateUser works in the correct user context
+    const client = getUserScopedClient(req.token);
+    const { error } = await client.auth.updateUser({ password: newPassword });
     if (error) return res.status(400).json({ error: error.message });
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
