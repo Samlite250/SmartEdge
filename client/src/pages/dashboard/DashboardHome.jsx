@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft, Gift, DollarSign, Copy, Share2, BadgeCheck, Coins, BarChart3, ExternalLink, Settings, Headphones, Activity, ArrowDownCircle, ArrowUpCircle, Users } from 'lucide-react'
+import { Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft, Gift, DollarSign, Copy, Share2, BadgeCheck, Coins, BarChart3, ExternalLink, Settings, Headphones, Activity, ArrowDownCircle, ArrowUpCircle, Users, X } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
+import { Modal } from '../../components/ui/Modal'
 import { useAuth } from '../../hooks/useAuth'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
@@ -47,6 +48,9 @@ export default function DashboardHome() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [prices, setPrices] = useState(marketCoins)
+  const [teamOpen, setTeamOpen] = useState(false)
+  const [teamData, setTeamData] = useState(null)
+  const [teamLoading, setTeamLoading] = useState(false)
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -110,6 +114,20 @@ export default function DashboardHome() {
     navigator.clipboard.writeText(link)
     toast('Referral link copied!', 'success')
   }
+
+  const openTeam = useCallback(async () => {
+    setTeamOpen(true)
+    if (teamData) return
+    setTeamLoading(true)
+    try {
+      const { data: res } = await api.get('/referrals/team')
+      setTeamData(res)
+    } catch {
+      toast('Failed to load team', 'error')
+    } finally {
+      setTeamLoading(false)
+    }
+  }, [teamData, toast])
 
   if (loading) {
     return (
@@ -193,9 +211,9 @@ export default function DashboardHome() {
         <Link to="/history" className="col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
           <Activity className="w-5 h-5 text-blue-400" /> History
         </Link>
-        <Link to="/my-team" className="col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+        <button onClick={openTeam} className="col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
           <Users className="w-5 h-5 text-purple-400" /> My Team
-        </Link>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -370,6 +388,75 @@ export default function DashboardHome() {
           </div>
         </div>
       </div>
+
+      <Modal open={teamOpen} onClose={() => setTeamOpen(false)} title="My Team">
+        {teamLoading ? (
+          <div className="space-y-3 py-4">
+            {[1, 2, 3].map(i => <div key={i} className="h-12 bg-white/5 rounded-xl animate-pulse" />)}
+          </div>
+        ) : teamData?.team?.length > 0 ? (
+          <>
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              <div className="text-center p-3 rounded-2xl bg-white/5">
+                <p className="text-xl font-bold text-white">{teamData.stats.totalMembers}</p>
+                <p className="text-[11px] text-text-muted mt-0.5">Members</p>
+              </div>
+              <div className="text-center p-3 rounded-2xl bg-white/5">
+                <p className="text-xl font-bold text-emerald-400">{teamData.stats.paidBonuses}</p>
+                <p className="text-[11px] text-text-muted mt-0.5">Paid</p>
+              </div>
+              <div className="text-center p-3 rounded-2xl bg-white/5">
+                <p className="text-xl font-bold text-amber-400">{formatCurrency(teamData.stats.totalBonusEarned, userCurrency)}</p>
+                <p className="text-[11px] text-text-muted mt-0.5">Earned</p>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/5">
+                    <th className="text-left py-2.5 px-2 text-xs font-semibold text-text-muted uppercase tracking-wider">Username</th>
+                    <th className="text-left py-2.5 px-2 text-xs font-semibold text-text-muted uppercase tracking-wider">Earned</th>
+                    <th className="text-left py-2.5 px-2 text-xs font-semibold text-text-muted uppercase tracking-wider">Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teamData.team.map((m, i) => (
+                    <tr key={m.id || i} className="border-b border-white/5 last:border-0">
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-primary font-bold text-xs">{m.referred?.full_name?.charAt(0)?.toUpperCase() || '?'}</span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-white font-medium truncate">{m.referred?.full_name || 'Unknown'}</p>
+                            <p className="text-text-muted text-[11px] truncate">{m.referred?.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-2">
+                        <span className={`font-semibold ${Number(m.bonus) > 0 ? 'text-emerald-400' : 'text-text-muted'}`}>
+                          {Number(m.bonus) > 0 ? `+${formatCurrency(m.bonus, userCurrency)}` : '—'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2 text-text-muted text-xs whitespace-nowrap">
+                        {m.referred?.created_at ? new Date(m.referred.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-10">
+            <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
+              <Users className="w-6 h-6 text-text-muted" />
+            </div>
+            <p className="text-text-secondary font-medium mb-1">No members yet</p>
+            <p className="text-xs text-text-muted">Share your referral link to start building your team</p>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

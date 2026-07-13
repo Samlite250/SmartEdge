@@ -20,7 +20,6 @@ import WalletPage from './pages/dashboard/WalletPage'
 import HistoryPage from './pages/dashboard/HistoryPage'
 import ProfilePage from './pages/dashboard/ProfilePage'
 import SupportPage from './pages/dashboard/SupportPage'
-import MyTeamPage from './pages/dashboard/MyTeamPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminDeposits from './pages/admin/AdminDeposits'
@@ -227,7 +226,6 @@ function App() {
           <Route path="history" element={<HistoryPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="support" element={<SupportPage />} />
-          <Route path="my-team" element={<MyTeamPage />} />
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
