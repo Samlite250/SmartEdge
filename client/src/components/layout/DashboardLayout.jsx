@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Outlet, Link, useLocation, Navigate } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { useAuth } from '../../hooks/useAuth'
 import { Button } from '../ui/Button'
@@ -14,9 +14,13 @@ const navLinks = [
 ]
 
 export function DashboardLayout() {
-  const { user, logout, isAdmin } = useAuth()
+  const { user, loading, logout, isAdmin } = useAuth()
   const location = useLocation()
   const countryFlag = getCountryFlag(user?.country)
+
+  if (!loading && !user) {
+    return <Navigate to="/login" replace />
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">

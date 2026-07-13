@@ -67,12 +67,14 @@ router.get('/dashboard', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
 
+    const safeQuery = (promise) => promise.catch(err => ({ data: null, error: err }));
+
     const [wallet, investments, transactions, deposits, referrals] = await Promise.all([
-      supabase.from('wallets').select('*').eq('user_id', userId).single(),
-      supabase.from('user_investments').select('*, investment_plans(*)').eq('user_id', userId).order('created_at', { ascending: false }),
-      supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
-      supabase.from('deposits').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
-      supabase.from('referrals').select('*, referred:profiles!referred_id(full_name, email, created_at)').eq('referrer_id', userId),
+      safeQuery(supabase.from('wallets').select('*').eq('user_id', userId).limit(1)),
+      safeQuery(supabase.from('user_investments').select('*, investment_plans(*)').eq('user_id', userId).order('created_at', { ascending: false })),
+      safeQuery(supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5)),
+      safeQuery(supabase.from('deposits').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5)),
+      safeQuery(supabase.from('referrals').select('*').eq('referrer_id', userId)),
     ]);
 
     const today = new Date().toISOString().split('T')[0];
@@ -85,15 +87,32 @@ router.get('/dashboard', authenticate, async (req, res) => {
 
     const todayEarningsTotal = todayEarnings?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
 
+    const walletData = wallet.data?.[0] || wallet.data || { balance: 0, currency: 'USD' };
+
+    let referralsData = referrals.data || [];
+    if (referralsData.length > 0 && referralsData[0].referred_id) {
+      const referredIds = referralsData.map(r => r.referred_id).filter(Boolean);
+      if (referredIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, created_at')
+          .in('id', referredIds);
+        const profileMap = {};
+        if (profiles) profiles.forEach(p => { profileMap[p.id] = p; });
+        referralsData = referralsData.map(r => ({ ...r, referred: profileMap[r.referred_id] || null }));
+      }
+    }
+
     res.json({
-      wallet: wallet.data || { balance: 0, currency: 'USD' },
+      wallet: walletData,
       investments: investments.data || [],
       recentTransactions: transactions.data || [],
       recentDeposits: deposits.data || [],
-      referrals: referrals.data || [],
+      referrals: referralsData,
       todayEarnings: todayEarningsTotal,
     });
   } catch (error) {
+    console.error('[Dashboard Error]', error.message);
     res.status(500).json({ error: 'Failed to fetch dashboard' });
   }
 });

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft, Gift, DollarSign, Copy, Share2, BadgeCheck, Coins, BarChart3, ExternalLink, Settings, Headphones, Activity, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { useAuth } from '../../hooks/useAuth'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
 import { useToast } from '../../components/ui/Toast'
 import { formatCurrency } from '../../lib/utils'
@@ -42,6 +42,7 @@ const chartData = [
 export default function DashboardHome() {
   const { user } = useAuth()
   const toast = useToast()
+  const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -53,6 +54,10 @@ export default function DashboardHome() {
         const { data: res } = await api.get('/users/dashboard')
         setData(res)
       } catch (err) {
+        if (err.response?.status === 401) {
+          navigate('/login', { replace: true })
+          return
+        }
         setError('Failed to load dashboard')
       } finally {
         setLoading(false)
