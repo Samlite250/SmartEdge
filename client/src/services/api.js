@@ -70,6 +70,7 @@ export const adminApi = {
   deletePlan: (id) => api.delete(`/admin/investment-plans/${id}`).then(r => r.data),
   getDeposits: () => api.get('/admin/deposits').then(r => r.data),
   approveDeposit: (id) => api.put(`/admin/deposits/${id}/approve`).then(r => r.data),
+  rejectDeposit: (id) => api.put(`/admin/deposits/${id}/reject`).then(r => r.data),
   getWithdrawals: () => api.get('/admin/withdrawals').then(r => r.data),
   approveWithdrawal: (id) => api.put(`/admin/withdrawals/${id}/approve`).then(r => r.data),
   rejectWithdrawal: (id) => api.put(`/admin/withdrawals/${id}/reject`).then(r => r.data),

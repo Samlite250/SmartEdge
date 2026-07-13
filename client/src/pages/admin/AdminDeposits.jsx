@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CheckCircle, RefreshCw, Image as ImageIcon, X, ExternalLink } from 'lucide-react'
+import { CheckCircle, XCircle, RefreshCw, Image as ImageIcon, X } from 'lucide-react'
 import { useToast } from '../../components/ui/Toast'
 import { adminApi } from '../../services/api'
 import { formatDateTime, formatCurrency } from '../../lib/utils'
@@ -50,6 +50,11 @@ export default function AdminDeposits() {
   const approve = async (id) => {
     try { await adminApi.approveDeposit(id); toast('Deposit approved', 'success'); load() }
     catch { toast('Failed to approve', 'error') }
+  }
+
+  const reject = async (id) => {
+    try { await adminApi.rejectDeposit(id); toast('Deposit rejected', 'success'); load() }
+    catch { toast('Failed to reject', 'error') }
   }
 
   const filtered = filter === 'all' ? deposits : deposits.filter(d => d.status === filter)
@@ -156,12 +161,20 @@ export default function AdminDeposits() {
                       <td className="px-4 py-3 text-xs text-text-muted">{formatDateTime(d.created_at)}</td>
                       <td className="px-4 py-3">
                         {d.status === 'pending' && (
-                          <button
-                            onClick={() => approve(d.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 text-success border border-success/20 text-xs font-semibold hover:bg-success/20 transition-colors"
-                          >
-                            <CheckCircle className="w-3.5 h-3.5" /> Approve
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => approve(d.id)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 text-success border border-success/20 text-xs font-semibold hover:bg-success/20 transition-colors"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" /> Approve
+                            </button>
+                            <button
+                              onClick={() => reject(d.id)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger/10 text-danger border border-danger/20 text-xs font-semibold hover:bg-danger/20 transition-colors"
+                            >
+                              <XCircle className="w-3.5 h-3.5" /> Reject
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

@@ -410,6 +410,42 @@ router.put('/deposits/:id/approve', async (req, res) => {
   }
 });
 
+router.put('/deposits/:id/reject', async (req, res) => {
+  try {
+    const { data: deposit } = await supabase
+      .from('deposits')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!deposit) return res.status(404).json({ error: 'Deposit not found' });
+
+    const { data, error } = await supabase
+      .from('deposits')
+      .update({ status: 'rejected' })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    // Record a failed transaction for audit trail
+    await supabase.from('transactions').insert({
+      user_id: deposit.user_id,
+      type: 'deposit',
+      amount: deposit.amount,
+      currency: 'USD',
+      status: 'failed',
+      reference: deposit.reference,
+      description: `Deposit rejected — ${deposit.payment_method}`,
+    });
+
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to reject deposit' });
+  }
+});
+
 router.get('/withdrawals', async (req, res) => {
   try {
     const { data, error } = await supabase
