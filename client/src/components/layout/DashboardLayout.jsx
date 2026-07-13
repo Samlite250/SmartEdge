@@ -31,8 +31,8 @@ export function DashboardLayout() {
               <span className="text-white font-bold text-sm">SE</span>
             </Link>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-text-primary truncate max-w-[120px] sm:max-w-[200px]">{countryFlag ? `${countryFlag} ` : ''}{user?.full_name || 'User'}</p>
-              <p className="text-xs text-text-muted">Welcome back</p>
+              <p className="text-sm font-extrabold text-text-primary">SmartEdge</p>
+              <p className="text-[9px] sm:text-[10px] text-text-muted whitespace-nowrap tracking-wide">Invest High and Earn More!</p>
             </div>
           </div>
 

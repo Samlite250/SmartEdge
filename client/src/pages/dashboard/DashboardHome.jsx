@@ -143,8 +143,13 @@ export default function DashboardHome() {
       <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 bg-[#131A28] p-6 rounded-3xl border border-white/5 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-32 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
         <div className="relative z-10 space-y-2">
-          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent flex items-center gap-3">
-            Welcome back, {user?.full_name?.split(' ')[0] || 'User'} {countryFlag ? <span className="text-3xl">{countryFlag}</span> : ''}
+          <motion.h1
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="text-2xl sm:text-3xl font-extrabold text-white flex flex-wrap items-center gap-x-2 gap-y-1"
+          >
+            <span>Welcome back, {user?.full_name?.split(' ')[0] || 'User'}</span>
+            {countryFlag && <span className="inline-block shrink-0">{countryFlag}</span>}
           </motion.h1>
           <motion.p initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="text-text-secondary text-sm md:text-base">
             Your portfolio is up <span className="text-emerald-400 font-semibold">+4.5%</span> this week. Keep it growing.
