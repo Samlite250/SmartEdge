@@ -154,13 +154,17 @@ router.get('/active', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('user_investments')
-      .select('*, investment_plans(*), cryptocurrencies(*)')
+      .select('*, investment_plans!plan_id(name, daily_return, duration, total_return, risk_level, description)')
       .eq('user_id', req.user.id)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
-    if (error) return res.status(400).json({ error: error.message });
-    res.json(data);
+    if (error) {
+      console.error('[Active investments error]', error.message);
+      return res.status(400).json({ error: error.message });
+    }
+    res.json(data || []);
   } catch (error) {
+    console.error('[Active investments caught]', error.message);
     res.status(500).json({ error: 'Failed to fetch investments' });
   }
 });
@@ -169,11 +173,14 @@ router.get('/history', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('user_investments')
-      .select('*, investment_plans(*)')
+      .select('*, investment_plans!plan_id(name, daily_return, duration, total_return, risk_level, description)')
       .eq('user_id', req.user.id)
       .order('created_at', { ascending: false });
-    if (error) return res.status(400).json({ error: error.message });
-    res.json(data);
+    if (error) {
+      console.error('[Investment history error]', error.message);
+      return res.status(400).json({ error: error.message });
+    }
+    res.json(data || []);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch history' });
   }
