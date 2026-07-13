@@ -238,8 +238,9 @@ export default function InvestPage() {
     const base = selected.min_investment
     const max = selected.max_investment || Infinity
     const multiples = [1, 2, 5, 10]
-    return multiples.map(m => base * m).filter(v => v <= max && (!balanceLoaded || v <= balance))
-  }, [selected, balance])
+    // Always show all valid amounts — balance filtering happens at button level
+    return multiples.map(m => base * m).filter(v => v <= max)
+  }, [selected])
 
   /* ══════════════════════════════════════════════════════════ */
   return (
@@ -340,7 +341,6 @@ export default function InvestPage() {
                   const dailyRet = plan.min_investment * plan.daily_return / 100
                   const totalRet = dailyRet * plan.duration
                   const payout = plan.min_investment + totalRet
-                  const canAfford = !balanceLoaded || plan.min_investment <= balance
                   const isPopular = !isVIP && i === 2
 
                   return (
@@ -351,12 +351,10 @@ export default function InvestPage() {
                       transition={{ delay: i * 0.04 }}
                     >
                       <div
-                        onClick={() => canAfford && selectPlan(plan)}
-                        className={`relative overflow-hidden rounded-2xl border transition-all duration-200 ${isChosen
+                        onClick={() => selectPlan(plan)}
+                        className={`relative overflow-hidden rounded-2xl border transition-all duration-200 cursor-pointer ${isChosen
                           ? `border-white/20 shadow-2xl ${colors.glow} ring-1 ${colors.ring} -translate-y-1`
-                          : canAfford
-                            ? 'border-white/6 hover:border-white/15 hover:-translate-y-0.5 cursor-pointer'
-                            : 'border-white/4 opacity-50 cursor-not-allowed'
+                          : 'border-white/6 hover:border-white/15 hover:-translate-y-0.5'
                           } bg-[#0f1623]`}
                       >
                         {/* Top accent bar */}
@@ -370,13 +368,7 @@ export default function InvestPage() {
                           </div>
                         )}
 
-                        {/* Locked overlay */}
-                        {!canAfford && (
-                          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm rounded-2xl gap-2">
-                            <Lock className="w-6 h-6 text-white/50" />
-                            <p className="text-xs text-white/50 font-medium">Need {fmt(plan.min_investment)}</p>
-                          </div>
-                        )}
+
 
                         <div className="p-5 space-y-4">
                           {/* Header row */}
@@ -435,21 +427,16 @@ export default function InvestPage() {
 
                           {/* CTA */}
                           <button
-                            onClick={(e) => { e.stopPropagation(); if (canAfford) selectPlan(plan) }}
-                            disabled={!canAfford}
+                            onClick={(e) => { e.stopPropagation(); selectPlan(plan) }}
                             className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 ${isChosen
                               ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg ${colors.glow}`
-                              : canAfford
-                                ? 'bg-white/6 text-white/70 hover:bg-white/10 border border-white/8'
-                                : 'bg-white/3 text-white/20 cursor-not-allowed'
+                              : 'bg-white/6 text-white/70 hover:bg-white/10 border border-white/8'
                               }`}
                           >
                             {isChosen ? (
                               <><CheckCircle2 className="w-3.5 h-3.5" /> Selected</>
-                            ) : canAfford ? (
-                              <>Select Plan <ChevronRight className="w-3.5 h-3.5" /></>
                             ) : (
-                              <><Lock className="w-3 h-3" /> Insufficient Balance</>
+                              <>Select Plan <ChevronRight className="w-3.5 h-3.5" /></>
                             )}
                           </button>
                         </div>
@@ -531,22 +518,29 @@ export default function InvestPage() {
                         </div>
 
                         {/* Quick amount buttons */}
-                        {quickAmounts.length > 1 && (
+                        {quickAmounts.length > 0 && (
                           <div>
                             <p className="text-[10px] text-white/35 mb-2 font-medium uppercase tracking-wide">Quick Select</p>
                             <div className="flex flex-wrap gap-2">
-                              {quickAmounts.map(val => (
-                                <button
-                                  key={val}
-                                  onClick={() => setAmount(String(val))}
-                                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150 ${num === val
-                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20'
-                                    : 'bg-white/5 text-white/50 border-white/8 hover:border-indigo-500/30 hover:bg-indigo-500/8 hover:text-white/80'
-                                    }`}
-                                >
-                                  {fmt(val)}
-                                </button>
-                              ))}
+                              {quickAmounts.map(val => {
+                                const unaffordable = balanceLoaded && val > balance
+                                const isActive = num === val
+                                return (
+                                  <button
+                                    key={val}
+                                    onClick={() => !unaffordable && setAmount(String(val))}
+                                    title={unaffordable ? `Insufficient balance — you have ${fmt(balance)}` : undefined}
+                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150 ${unaffordable
+                                        ? 'bg-white/2 text-white/20 border-white/5 cursor-not-allowed line-through'
+                                        : isActive
+                                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20'
+                                          : 'bg-white/5 text-white/50 border-white/8 hover:border-indigo-500/30 hover:bg-indigo-500/8 hover:text-white/80'
+                                      }`}
+                                  >
+                                    {fmt(val)}
+                                  </button>
+                                )
+                              })}
                               {balance > 0 && num !== balance && (
                                 <button
                                   onClick={() => setAmount(String(Math.min(balance, selected.max_investment || balance)))}
@@ -588,6 +582,26 @@ export default function InvestPage() {
                           </div>
                         )}
 
+                        {/* Insufficient balance notice */}
+                        {balanceLoaded && balance < selected.min_investment && (
+                          <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                            <Lock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-xs text-amber-300/90 font-semibold">Insufficient balance to invest</p>
+                              <p className="text-[11px] text-amber-300/60 mt-0.5">
+                                You need at least {fmt(selected.min_investment)} to activate this plan.
+                                Your balance: <span className="font-bold">{fmt(balance)}</span>.
+                              </p>
+                              <a
+                                href="/dashboard/deposit"
+                                className="inline-flex items-center gap-1.5 mt-2 text-[11px] font-bold text-amber-400 hover:text-amber-300 transition-colors"
+                              >
+                                <Wallet className="w-3 h-3" /> Deposit Funds →
+                              </a>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Action buttons */}
                         <div className="flex gap-3 pt-1">
                           <button
@@ -600,6 +614,8 @@ export default function InvestPage() {
                           >
                             {investing ? (
                               <><RefreshCw className="w-4 h-4 animate-spin" /> Processing…</>
+                            ) : balanceLoaded && balance < (num || selected.min_investment) ? (
+                              <><Lock className="w-4 h-4" /> Insufficient Balance</>
                             ) : (
                               <>Invest Now <ArrowRight className="w-4 h-4" /></>
                             )}
