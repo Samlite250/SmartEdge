@@ -399,6 +399,15 @@ const mockSupabase = {
 
     async resetPasswordForEmail() { return { data: {}, error: null } },
     async updateUser() { return { data: { user: {} }, error: null } },
+    async refreshSession({ refresh_token }) {
+      // In mock mode, the refresh_token IS the access_token (same dev token)
+      const userId = sessions.get(refresh_token);
+      if (!userId) return { data: { session: null }, error: { message: 'Invalid refresh token' } };
+      const newToken = `dev_token_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+      sessions.delete(refresh_token);
+      sessions.set(newToken, userId);
+      return { data: { session: { access_token: newToken, refresh_token: newToken, expires_in: 604800 } }, error: null };
+    },
 
     onAuthStateChange() {
       return { data: { subscription: { unsubscribe: () => { } } } };

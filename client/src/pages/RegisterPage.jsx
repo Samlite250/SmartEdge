@@ -38,7 +38,7 @@ export default function RegisterPage() {
       await api.post('/auth/register', form)
       try {
         const { data } = await api.post('/auth/login', { email: form.email, password: form.password })
-        login(data.user, data.token)
+        login(data.user, data.token, data.refreshToken)
         toast('Welcome to SmartEdge!', 'success')
         navigate('/dashboard')
       } catch {

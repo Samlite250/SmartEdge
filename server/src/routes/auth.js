@@ -148,7 +148,11 @@ router.post('/login', async (req, res) => {
             const retry = await supabase.auth.signInWithPassword({ email, password });
             if (!retry.error && retry.data?.session) {
               const { data: userProfile } = await supabase.from('profiles').select('*').eq('id', retry.data.user.id).single();
-              return res.json({ token: retry.data.session.access_token, user: { ...retry.data.user, profile: userProfile } });
+              return res.json({
+                token: retry.data.session.access_token,
+                refreshToken: retry.data.session.refresh_token,
+                user: { ...retry.data.user, profile: userProfile }
+              });
             }
           }
         } catch (adminErr) {
@@ -163,6 +167,7 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token: data.session.access_token,
+      refreshToken: data.session.refresh_token,
       user: { ...data.user, profile },
     });
   } catch (error) {
@@ -178,6 +183,26 @@ router.post('/logout', async (req, res) => {
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Logout failed' });
+  }
+});
+
+router.post('/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(400).json({ error: 'Refresh token required' });
+
+    const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+
+    if (error || !data?.session) {
+      return res.status(401).json({ error: 'Session expired. Please log in again.' });
+    }
+
+    res.json({
+      token: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Token refresh failed' });
   }
 });
 

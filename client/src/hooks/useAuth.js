@@ -52,15 +52,17 @@ export function useAuth() {
     }
   }, [])
 
-  const login = useCallback((rawUser, token) => {
+  const login = useCallback((rawUser, token, refreshToken) => {
     const u = normalizeUser({ ...rawUser, token })
     localStorage.setItem('se_token', token)
+    if (refreshToken) localStorage.setItem('se_refresh_token', refreshToken)
     localStorage.setItem('se_user', JSON.stringify(u))
     setUser(u)
   }, [])
 
   const logout = useCallback(() => {
     localStorage.removeItem('se_token')
+    localStorage.removeItem('se_refresh_token')
     localStorage.removeItem('se_user')
     setUser(null)
   }, [])

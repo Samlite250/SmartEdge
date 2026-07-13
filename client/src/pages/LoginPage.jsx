@@ -21,7 +21,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const { data } = await api.post('/auth/login', form)
-      login(data.user, data.token)
+      login(data.user, data.token, data.refreshToken)
       toast('Welcome back!', 'success')
       navigate(data.user.profile?.role === 'admin' ? '/admin' : '/dashboard')
     } catch (err) {
@@ -88,7 +88,7 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm text-text-secondary">
-                <input type="checkbox" checked={form.remember} onChange={e => setForm({...form, remember: e.target.checked})} className="rounded border-border text-primary focus:ring-primary" />
+                <input type="checkbox" checked={form.remember} onChange={e => setForm({ ...form, remember: e.target.checked })} className="rounded border-border text-primary focus:ring-primary" />
                 Remember me
               </label>
               <Link to="/forgot-password" className="text-sm text-primary hover:underline">

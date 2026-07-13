@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
     setLoading(true)
     try {
       const { data } = await api.post('/auth/login', form)
-      login(data.user, data.token)
+      login(data.user, data.token, data.refreshToken)
       // Verify admin access by hitting the backend — it will 403 if not admin
       try {
         await api.get('/admin/dashboard')
