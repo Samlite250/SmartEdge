@@ -198,20 +198,14 @@ export default function DashboardHome() {
       </div>
 
       {/* Deposit & Withdraw Action Row */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-        <Link to="/wallet" className="col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl bg-primary text-white font-semibold text-sm hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+      <div className="grid grid-cols-3 gap-3">
+        <Link to="/wallet" className="flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
           <ArrowDownCircle className="w-5 h-5" /> Deposit
         </Link>
-        <Link to="/wallet" className="col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border-2 border-primary/60 text-primary font-semibold text-sm hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+        <Link to="/wallet" className="flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl border-2 border-primary/60 text-primary font-semibold text-sm hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
           <ArrowUpCircle className="w-5 h-5" /> Withdraw
         </Link>
-        <Link to="/invest" className="col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
-          <TrendingUp className="w-5 h-5 text-warning" /> Invest
-        </Link>
-        <Link to="/history" className="col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
-          <Activity className="w-5 h-5 text-blue-400" /> History
-        </Link>
-        <button onClick={openTeam} className="col-span-1 flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+        <button onClick={openTeam} className="flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
           <Users className="w-5 h-5 text-purple-400" /> My Team
         </button>
       </div>
