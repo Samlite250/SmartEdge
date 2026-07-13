@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion'
-import { MessageSquare, Mail, Phone, Headphones, ExternalLink } from 'lucide-react'
+import { MessageSquare, Mail, Phone, Headphones, ExternalLink, User } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 
 const WHATSAPP_LINK = 'https://chat.whatsapp.com/KeL8QRse8ro5FOGJZWL37F'
+const CEO_WHATSAPP = 'https://wa.me/+255796634436?text=Hello%20mfasha%20gukora%20account%20muri%20SmartEdge%20kuri%20vip%20ya%2013'
 
 export default function SupportPage() {
   return (
@@ -13,14 +14,28 @@ export default function SupportPage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
+          <a href={CEO_WHATSAPP} target="_blank" rel="noopener noreferrer" className="block">
+            <Card hover>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl text-[#25D366] bg-[#25D366]/10 flex items-center justify-center">
+                  <User className="w-5 h-5 text-[#25D366]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-text-primary">Get in Touch with CEO</p>
+                  <p className="text-sm text-text-muted">Chat on WhatsApp</p>
+                </div>
+              </div>
+            </Card>
+          </a>
+        </motion.div>
         {[
-          { icon: MessageSquare, label: 'Live Chat', desc: 'Chat with us now', color: 'text-primary' },
           { icon: Mail, label: 'Email Us', desc: 'support@smartedge.com', color: 'text-info' },
           { icon: Phone, label: 'Call Us', desc: '+256 700 000 000', color: 'text-accent' },
         ].map((item, i) => {
           const Icon = item.icon
           return (
-            <motion.div key={item.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
+            <motion.div key={item.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (i + 1) * 0.1 }}>
               <Card hover>
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-xl ${item.color} bg-current/10 flex items-center justify-center`}>
