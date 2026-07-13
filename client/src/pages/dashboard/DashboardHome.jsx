@@ -199,14 +199,17 @@ export default function DashboardHome() {
 
       {/* Deposit & Withdraw Action Row */}
       <div className="grid grid-cols-3 gap-3">
-        <Link to="/wallet" className="flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
-          <ArrowDownCircle className="w-5 h-5" /> Deposit
+        <Link to="/wallet" className="flex flex-col items-center justify-center gap-1 py-4 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+          <ArrowDownCircle className="w-6 h-6" />
+          <span>Deposit</span>
         </Link>
-        <Link to="/wallet" className="flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl border-2 border-primary/60 text-primary font-semibold text-sm hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
-          <ArrowUpCircle className="w-5 h-5" /> Withdraw
+        <Link to="/wallet" className="flex flex-col items-center justify-center gap-1 py-4 rounded-xl border-2 border-primary/60 text-primary font-semibold text-sm hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+          <ArrowUpCircle className="w-6 h-6" />
+          <span>Withdraw</span>
         </Link>
-        <button onClick={openTeam} className="flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl border border-border/50 bg-surface text-text-primary font-semibold text-sm hover:bg-surface-hover hover:border-border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
-          <Users className="w-5 h-5 text-purple-400" /> My Team
+        <button onClick={openTeam} className="flex flex-col items-center justify-center gap-1 py-4 rounded-xl border border-white/10 bg-[#1e2738] text-white font-semibold text-sm hover:bg-[#253045] hover:border-white/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+          <Users className="w-6 h-6 text-purple-400" />
+          <span>My Team</span>
         </button>
       </div>
 
