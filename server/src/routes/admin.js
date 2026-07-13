@@ -678,6 +678,50 @@ router.delete('/transactions/:id', async (req, res) => {
   }
 });
 
+// Truncate all financial data to prepare system for production
+router.post('/truncate-all', async (req, res) => {
+  try {
+    // Delete all transactions
+    const { error: txErr } = await supabase
+      .from('transactions')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    // Delete all deposits
+    const { error: depErr } = await supabase
+      .from('deposits')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    // Delete all withdrawals
+    const { error: wdErr } = await supabase
+      .from('withdrawals')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    // Delete all user investments
+    const { error: invErr } = await supabase
+      .from('user_investments')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    // Reset all wallet balances to 0
+    const { error: walErr } = await supabase
+      .from('wallets')
+      .update({ balance: 0 })
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    const errors = [txErr, depErr, wdErr, invErr, walErr].filter(Boolean);
+    if (errors.length > 0) {
+      return res.status(400).json({ error: errors.map(e => e.message).join('; ') });
+    }
+
+    res.json({ success: true, message: 'All transactions, deposits, withdrawals, investments cleared. Wallets reset to 0.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to truncate data' });
+  }
+});
+
 router.get('/referrals', async (req, res) => {
   try {
     const { data, error } = await supabase

@@ -26,6 +26,7 @@ export default function AdminSettings() {
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [truncating, setTruncating] = useState(false)
   const toast = useToast()
 
   const [instructionsList, setInstructionsList] = useState([])
@@ -59,6 +60,22 @@ export default function AdminSettings() {
       toast('Failed to save settings', 'error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleTruncateAll = async () => {
+    const doubleConfirm = window.confirm("WARNING: This will permanently delete all logs, transactions, user investments, deposits, withdrawals, and set all user wallets back to 0. Are you absolutely sure you want to proceed?")
+    if (!doubleConfirm) return
+    
+    setTruncating(true)
+    try {
+      await adminApi.truncateAll()
+      toast('System truncated and reset to clean state successfully!', 'success')
+      load()
+    } catch (err) {
+      toast(err.response?.data?.error || 'Failed to reset system data', 'error')
+    } finally {
+      setTruncating(false)
     }
   }
 
@@ -295,6 +312,38 @@ export default function AdminSettings() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+        {/* System Reset / Danger Zone */}
+        <div className="rounded-2xl border border-danger/30 overflow-hidden bg-danger/5">
+          <div className="px-6 py-4 border-b border-danger/20 flex items-center justify-between" style={{ background: '#0d1117' }}>
+            <div>
+              <h2 className="font-semibold text-danger">Danger Zone</h2>
+              <p className="text-xs text-text-muted mt-0.5">Permanent actions that cannot be undone</p>
+            </div>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-text-primary">Truncate and Reset Platform Data</p>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Deletes all deposits, withdrawals, active investments, other transactions, and resets all wallet balances to 0.
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={truncating}
+                onClick={handleTruncateAll}
+                className="px-4 py-2 rounded-xl bg-danger hover:bg-danger/80 disabled:bg-danger/40 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shrink-0 font-sans"
+              >
+                {truncating ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                )}
+                {truncating ? 'Resetting...' : 'Reset System Data'}
+              </button>
+            </div>
           </div>
         </div>
 

@@ -87,6 +87,7 @@ export const adminApi = {
   getReferrals: () => api.get('/admin/referrals').then(r => r.data),
   getSettings: () => api.get('/admin/settings').then(r => r.data),
   updateSettings: (data) => api.put('/admin/settings', data).then(r => r.data),
+  truncateAll: () => api.post('/admin/truncate-all').then(r => r.data),
   getInstructions: () => api.get('/deposits/instructions').then(r => r.data),
   upsertInstructions: (data) => api.post('/deposits/instructions', data).then(r => r.data),
   deleteInstructions: (id) => api.delete(`/deposits/instructions/${id}`).then(r => r.data),
