@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { MessageSquare, Mail, Phone, Headphones, ExternalLink } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 
-const WHATSAPP_LINK = 'https://wa.me/+255796634436?text=Hello%20mfasha%20gukora%20account%20muri%20SmartEdge%20kuri%20vip%20ya%2013'
+const WHATSAPP_LINK = 'https://chat.whatsapp.com/KeL8QRse8ro5FOGJZWL37F'
 
 export default function SupportPage() {
   return (
