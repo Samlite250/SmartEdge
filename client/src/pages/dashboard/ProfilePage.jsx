@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { User, Mail, Phone, Globe, Shield, Calendar, Lock, Save, KeyRound, LogOut } from 'lucide-react'
+import { useNavigate, Link } from 'react-router-dom'
+import { User, Mail, Phone, Globe, Shield, Calendar, Lock, Save, KeyRound, LogOut, Headphones, ExternalLink } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
@@ -131,6 +131,17 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+
+          <Link to="/support" className="flex items-center gap-3 p-4 rounded-2xl bg-[#131A28] border border-white/5 hover:border-white/10 hover:bg-[#1a2332] transition-all group">
+            <div className="w-10 h-10 rounded-xl bg-[#25D366]/15 flex items-center justify-center flex-shrink-0">
+              <Headphones className="w-5 h-5 text-[#25D366]" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-text-primary group-hover:text-[#25D366] transition-colors">Support</p>
+              <p className="text-xs text-text-muted">Get help via WhatsApp</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted group-hover:text-[#25D366] transition-colors" />
+          </Link>
 
           <Card>
             <CardContent className="pt-6">

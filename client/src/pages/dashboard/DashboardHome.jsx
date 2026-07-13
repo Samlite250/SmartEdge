@@ -359,30 +359,6 @@ export default function DashboardHome() {
             </div>
           </div>
 
-          {/* Quick Actions List */}
-          <div className="bg-[#131A28] rounded-3xl border border-white/5 p-6">
-            <h3 className="text-lg font-bold text-text-primary mb-4">Quick Actions</h3>
-            <div className="space-y-2">
-              <Link to="/profile" className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all group border border-transparent hover:border-white/5">
-                <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-text-muted group-hover:text-indigo-400 group-hover:bg-indigo-400/10 transition-colors">
-                  <Settings className="w-4 h-4" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-text-primary group-hover:text-indigo-400 transition-colors">Settings</p>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-text-muted group-hover:text-indigo-400 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0" />
-              </Link>
-              <Link to="/support" className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all group border border-transparent hover:border-white/5">
-                <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-text-muted group-hover:text-emerald-400 group-hover:bg-emerald-400/10 transition-colors">
-                  <Headphones className="w-4 h-4" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-text-primary group-hover:text-emerald-400 transition-colors">Support</p>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-text-muted group-hover:text-emerald-400 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0" />
-              </Link>
-            </div>
-          </div>
         </div>
       </div>
 
