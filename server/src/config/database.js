@@ -305,6 +305,12 @@ class QueryBuilder {
     return this;
   }
 
+  upsert(values) {
+    this._operation = 'upsert';
+    this._values = values;
+    return this;
+  }
+
   update(values) {
     this._operation = 'update';
     this._values = values;
@@ -346,6 +352,28 @@ class QueryBuilder {
         saveMockDb();
 
         const result = this._singleMode ? { data: items[0] || null, error: null } : { data: items, error: null };
+        return resolve(result);
+      }
+
+      if (this._operation === 'upsert') {
+        let items = Array.isArray(this._values) ? this._values : [this._values];
+        for (const item of items) {
+          const existing = item.id ? db[this.table].find(r => r.id === item.id) : db[this.table][0];
+          if (existing) {
+            Object.assign(existing, item, { updated_at: new Date().toISOString() });
+          } else {
+            const newItem = {
+              ...item,
+              id: item.id || `dev_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+              created_at: item.created_at || new Date().toISOString(),
+            };
+            db[this.table].push(newItem);
+          }
+        }
+        saveMockDb();
+        const result = this._singleMode
+          ? { data: db[this.table].find(r => r.id === items[0].id) || items[0], error: null }
+          : { data: items, error: null };
         return resolve(result);
       }
 
