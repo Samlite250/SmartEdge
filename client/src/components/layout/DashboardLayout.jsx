@@ -25,13 +25,13 @@ export function DashboardLayout() {
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
       <header className="sticky top-0 z-40 glass border-b border-border/50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/dashboard" className="w-8 h-8 rounded-lg card-gradient flex items-center justify-center">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Link to="/dashboard" className="w-8 h-8 rounded-lg card-gradient flex items-center justify-center shrink-0">
               <span className="text-white font-bold text-sm">SE</span>
             </Link>
-            <div>
-              <p className="text-sm font-semibold text-text-primary">{countryFlag ? `${countryFlag} ` : ''}{user?.full_name || 'User'}</p>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-text-primary truncate max-w-[120px] sm:max-w-[200px]">{countryFlag ? `${countryFlag} ` : ''}{user?.full_name || 'User'}</p>
               <p className="text-xs text-text-muted">Welcome back</p>
             </div>
           </div>
@@ -47,11 +47,11 @@ export function DashboardLayout() {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {isAdmin && (
-              <Link to="/admin" className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
+              <Link to="/admin" className="relative flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                Admin Panel
+                <span className="hidden sm:inline">Admin Panel</span>
                 <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                 <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400" />
               </Link>
@@ -67,7 +67,7 @@ export function DashboardLayout() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <Outlet />
       </main>
 

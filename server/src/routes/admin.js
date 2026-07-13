@@ -198,7 +198,7 @@ router.get('/deposits', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('deposits')
-      .select('*, profiles(full_name, email, username)')
+      .select('*, profiles(full_name, email, username, currency)')
       .order('created_at', { ascending: false });
 
     if (error) return res.status(400).json({ error: error.message });
@@ -239,11 +239,18 @@ router.put('/deposits/:id/approve', async (req, res) => {
       }).eq('id', wallet.id);
     }
 
+    // Fetch user's currency from their profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('currency')
+      .eq('id', deposit.user_id)
+      .single();
+
     await supabase.from('transactions').insert({
       user_id: deposit.user_id,
       type: 'deposit',
       amount: deposit.amount,
-      currency: 'USD',
+      currency: deposit.currency || profile?.currency || 'USD',
       status: 'completed',
       reference: deposit.reference,
       description: `Deposit via ${deposit.payment_method}`,
@@ -259,7 +266,7 @@ router.get('/withdrawals', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('withdrawals')
-      .select('*, profiles(full_name, email, username)')
+      .select('*, profiles(full_name, email, username, currency)')
       .order('created_at', { ascending: false });
 
     if (error) return res.status(400).json({ error: error.message });

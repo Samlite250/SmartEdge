@@ -79,7 +79,7 @@ export default function AdminDeposits() {
             className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all flex items-center gap-1.5 ${filter === f
               ? 'card-gradient text-white shadow-md'
               : 'bg-surface text-text-secondary hover:bg-border'
-            }`}
+              }`}
           >
             {f}
             <span className={`${filter === f ? 'bg-white/20' : 'bg-border'} text-[10px] rounded-full px-1.5 py-0.5 font-bold`}>
@@ -126,7 +126,12 @@ export default function AdminDeposits() {
                         <p className="font-medium text-text-primary">{d.profiles?.full_name || d.user_id?.slice(0, 8)}</p>
                         <p className="text-xs text-text-muted">{d.profiles?.email || ''}</p>
                       </td>
-                      <td className="px-4 py-3 font-bold text-success text-base">{formatCurrency(d.amount)}</td>
+                      <td className="px-4 py-3">
+                        <p className="font-bold text-success text-base">{formatCurrency(d.amount, d.currency || d.profiles?.currency || 'USD')}</p>
+                        {(d.currency || d.profiles?.currency) && (
+                          <span className="text-[10px] font-semibold text-text-muted bg-surface border border-border/50 px-1.5 py-0.5 rounded-full">{d.currency || d.profiles?.currency}</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         <span className="px-2 py-0.5 rounded-lg text-xs bg-surface text-text-secondary border border-border/50">{d.payment_method}</span>
                       </td>

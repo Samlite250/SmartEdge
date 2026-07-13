@@ -84,7 +84,7 @@ export default function AdminWithdrawals() {
             className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all flex items-center gap-1.5 ${filter === f
               ? 'card-gradient text-white shadow-md'
               : 'bg-surface text-text-secondary hover:bg-border'
-            }`}
+              }`}
           >
             {f}
             <span className={`${filter === f ? 'bg-white/20' : 'bg-border'} text-[10px] rounded-full px-1.5 py-0.5 font-bold`}>
@@ -127,7 +127,12 @@ export default function AdminWithdrawals() {
                       <p className="font-medium text-text-primary">{w.profiles?.full_name || w.user_id?.slice(0, 8)}</p>
                       <p className="text-xs text-text-muted">{w.profiles?.email || ''}</p>
                     </td>
-                    <td className="px-4 py-3 font-bold text-danger text-base">{formatCurrency(w.amount)}</td>
+                    <td className="px-4 py-3">
+                      <p className="font-bold text-danger text-base">{formatCurrency(w.amount, w.currency || w.profiles?.currency || 'USD')}</p>
+                      {(w.currency || w.profiles?.currency) && (
+                        <span className="text-[10px] font-semibold text-text-muted bg-surface border border-border/50 px-1.5 py-0.5 rounded-full">{w.currency || w.profiles?.currency}</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <span className="px-2 py-0.5 rounded-lg text-xs bg-surface text-text-secondary border border-border/50">{w.payment_method}</span>
                     </td>

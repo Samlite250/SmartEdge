@@ -49,6 +49,7 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   body {
@@ -61,6 +62,8 @@
 
   * {
     -webkit-tap-highlight-color: transparent;
+    min-width: 0; /* Prevents flex/grid children from overflowing */
+    box-sizing: border-box;
   }
 
   ::selection {

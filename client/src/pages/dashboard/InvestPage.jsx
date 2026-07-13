@@ -77,18 +77,33 @@ function ActiveInvestCard({ inv, currency, i }) {
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            <div className="text-center p-3 rounded-xl bg-white/4 border border-white/5">
+          <div className="hidden sm:grid grid-cols-3 gap-1.5 mb-4">
+            <div className="text-center py-2.5 px-1 rounded-lg bg-white/4 border border-white/5">
               <p className="text-[10px] text-white/40 mb-0.5">Capital</p>
-              <p className="text-xs font-bold text-white">{formatCurrency(inv.amount, currency)}</p>
+              <p className="text-xs font-bold text-white truncate px-0.5">{formatCurrency(inv.amount, currency)}</p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-white/4 border border-white/5">
+            <div className="text-center py-2.5 px-1 rounded-lg bg-white/4 border border-white/5">
               <p className="text-[10px] text-white/40 mb-0.5">Earned</p>
-              <p className={`text-xs font-bold ${colors.stat}`}>+{formatCurrency(earned, currency)}</p>
+              <p className={`text-xs font-bold ${colors.stat} truncate px-0.5`}>+{formatCurrency(earned, currency)}</p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-white/4 border border-white/5">
+            <div className="text-center py-2.5 px-1 rounded-lg bg-white/4 border border-white/5">
               <p className="text-[10px] text-white/40 mb-0.5">Matures</p>
-              <p className="text-xs font-bold text-white">{endDate}</p>
+              <p className="text-xs font-bold text-white truncate px-0.5">{endDate}</p>
+            </div>
+          </div>
+          {/* Mobile: stacked rows */}
+          <div className="sm:hidden space-y-1.5 mb-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-white/40">Capital</span>
+              <span className="text-xs font-bold text-white">{formatCurrency(inv.amount, currency)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-white/40">Earned</span>
+              <span className={`text-xs font-bold ${colors.stat}`}>+{formatCurrency(earned, currency)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-white/40">Matures</span>
+              <span className="text-xs font-bold text-white">{endDate}</span>
             </div>
           </div>
 
@@ -402,19 +417,34 @@ export default function InvestPage() {
                                   </p>
                                 </div>
 
-                                {/* Stats grid */}
-                                <div className="grid grid-cols-3 gap-2 text-center">
-                                  <div className="p-2.5 rounded-xl bg-white/4 border border-white/5">
+                                {/* Stats grid - 3-col on sm+, stacked rows on mobile */}
+                                <div className="hidden sm:grid grid-cols-3 gap-1.5 text-center">
+                                  <div className="py-2 px-1 rounded-lg bg-white/4 border border-white/5">
                                     <p className="text-[9px] text-white/35 mb-0.5">Daily</p>
-                                    <p className={`text-[11px] font-bold ${colors.stat}`}>+{fmt(dailyRet)}</p>
+                                    <p className={`text-[11px] font-bold ${colors.stat} truncate px-0.5`}>+{fmt(dailyRet)}</p>
                                   </div>
-                                  <div className="p-2.5 rounded-xl bg-white/4 border border-white/5">
+                                  <div className="py-2 px-1 rounded-lg bg-white/4 border border-white/5">
                                     <p className="text-[9px] text-white/35 mb-0.5">Total</p>
-                                    <p className="text-[11px] font-bold text-emerald-400">+{fmt(totalRet)}</p>
+                                    <p className={`text-[11px] font-bold text-emerald-400 truncate px-0.5`}>+{fmt(totalRet)}</p>
                                   </div>
-                                  <div className="p-2.5 rounded-xl bg-white/4 border border-white/5">
+                                  <div className="py-2 px-1 rounded-lg bg-white/4 border border-white/5">
                                     <p className="text-[9px] text-white/35 mb-0.5">{plan.duration}d ROI</p>
-                                    <p className="text-[11px] font-bold text-white">{fmt(payout)}</p>
+                                    <p className={`text-[11px] font-bold text-white truncate px-0.5`}>{fmt(payout)}</p>
+                                  </div>
+                                </div>
+                                {/* Mobile: compact rows */}
+                                <div className="sm:hidden space-y-1.5">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] text-white/35">Daily Interest</span>
+                                    <span className={`text-[11px] font-bold ${colors.stat}`}>+{fmt(dailyRet)}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] text-white/35">Total Profit</span>
+                                    <span className="text-[11px] font-bold text-emerald-400">+{fmt(totalRet)}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] text-white/35">{plan.duration}d Payout</span>
+                                    <span className="text-[11px] font-bold text-white">{fmt(payout)}</span>
                                   </div>
                                 </div>
 
@@ -595,21 +625,37 @@ export default function InvestPage() {
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="rounded-2xl border border-emerald-500/15 bg-emerald-500/5 p-5 space-y-4"
+                        className="rounded-2xl border border-emerald-500/15 bg-emerald-500/5 p-4 sm:p-5 space-y-3"
                       >
                         <p className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">Earnings Calculation</p>
-                        <div className="grid grid-cols-3 gap-3 text-center">
+                        {/* Mobile: row layout. sm+: 3-col grid */}
+                        <div className="hidden sm:grid grid-cols-3 gap-3 text-center">
                           <div className="space-y-1">
                             <span className="text-[10px] text-white/35 block">Daily Interest</span>
-                            <p className="text-base font-extrabold text-emerald-400">+{fmt(dailyProfit)}</p>
+                            <p className="text-sm font-extrabold text-emerald-400">+{fmt(dailyProfit)}</p>
                           </div>
                           <div className="space-y-1">
                             <span className="text-[10px] text-white/35 block">Net Profit</span>
-                            <p className="text-base font-extrabold text-indigo-400">+{fmt(totalProfit)}</p>
+                            <p className="text-sm font-extrabold text-indigo-400">+{fmt(totalProfit)}</p>
                           </div>
                           <div className="space-y-1">
                             <span className="text-[10px] text-white/35 block">Total Payout</span>
-                            <p className="text-base font-extrabold text-white">{fmt(totalPayout)}</p>
+                            <p className="text-sm font-extrabold text-white">{fmt(totalPayout)}</p>
+                          </div>
+                        </div>
+                        {/* Mobile stacked rows */}
+                        <div className="sm:hidden space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] text-white/40">Daily Interest</span>
+                            <p className="text-sm font-extrabold text-emerald-400">+{fmt(dailyProfit)}</p>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] text-white/40">Net Profit</span>
+                            <p className="text-sm font-extrabold text-indigo-400">+{fmt(totalProfit)}</p>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] text-white/40">Total Payout</span>
+                            <p className="text-sm font-extrabold text-white">{fmt(totalPayout)}</p>
                           </div>
                         </div>
                         <div className="flex items-center justify-between text-[11px] text-white/30 pt-3 border-t border-emerald-500/10">
@@ -649,7 +695,7 @@ export default function InvestPage() {
                     </div>
 
                     {/* Final Action Button */}
-                    <div className="flex gap-3 pt-2">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
                       <button
                         onClick={handleInvest}
                         disabled={!canInvest || investing}
@@ -668,7 +714,7 @@ export default function InvestPage() {
                       </button>
                       <button
                         onClick={() => { setSelected(null); setAmount('') }}
-                        className="px-5 py-4 rounded-2xl text-xs font-bold border border-white/8 text-white/40 hover:text-white/60 hover:bg-white/5 transition-all"
+                        className="sm:w-auto px-5 py-4 rounded-2xl text-xs font-bold border border-white/8 text-white/40 hover:text-white/60 hover:bg-white/5 transition-all"
                       >
                         Cancel
                       </button>
@@ -708,7 +754,7 @@ export default function InvestPage() {
           ) : (
             <>
               {/* Summary stats */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="hidden sm:grid grid-cols-3 gap-3">
                 {[
                   {
                     label: 'Active Plans',
@@ -735,6 +781,21 @@ export default function InvestPage() {
                     <p className="text-[10px] text-white/30 mt-0.5">{s.label}</p>
                   </div>
                 ))}
+              </div>
+              {/* Mobile summary: horizontal row */}
+              <div className="sm:hidden flex items-center gap-2 p-3 rounded-2xl bg-white/4 border border-white/6">
+                <div className="flex-1 text-center border-r border-white/10">
+                  <p className="text-base font-extrabold text-indigo-400">{active.filter(a => a.status === 'active').length}</p>
+                  <p className="text-[9px] text-white/30">Plans</p>
+                </div>
+                <div className="flex-1 text-center border-r border-white/10">
+                  <p className="text-xs font-extrabold text-emerald-400">{fmt(active.reduce((s, a) => s + Number(a.amount), 0))}</p>
+                  <p className="text-[9px] text-white/30">Invested</p>
+                </div>
+                <div className="flex-1 text-center">
+                  <p className="text-xs font-extrabold text-amber-400">{fmt(active.reduce((s, a) => s + Number(a.total_earned || 0), 0))}</p>
+                  <p className="text-[9px] text-white/30">Earned</p>
+                </div>
               </div>
 
               {/* Investment cards */}
