@@ -86,7 +86,8 @@ export default function HistoryPage() {
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
 
-  const userCurrency = user?.currency || 'USD'
+  // Resolve to user's actual local currency, not USD default
+  const userCurrency = user?.currency && user.currency !== 'USD' ? user.currency : (user?.currency || 'USD')
 
   useEffect(() => {
     walletApi.getTransactions(1, 200)
@@ -139,8 +140,8 @@ export default function HistoryPage() {
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all ${filter === f.key
-                ? 'card-gradient text-white shadow-md'
-                : 'bg-surface text-text-secondary hover:bg-border border border-border/50'
+              ? 'card-gradient text-white shadow-md'
+              : 'bg-surface text-text-secondary hover:bg-border border border-border/50'
               }`}
           >
             {f.label}
