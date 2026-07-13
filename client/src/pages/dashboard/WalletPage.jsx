@@ -31,16 +31,21 @@ export default function WalletPage() {
   const [loadingInstructions, setLoadingInstructions] = useState(false)
 
   useEffect(() => {
-    if (mode === 'deposit' && user?.country) {
+    if (mode === 'deposit') {
+      const country = user?.country || user?.profile?.country
+      if (!country || country === 'International') {
+        setInstructions(null)
+        return
+      }
       setLoadingInstructions(true)
-      depositApi.getInstructions(user.country)
-        .then(data => setInstructions(data))
+      depositApi.getInstructions(country)
+        .then(data => setInstructions(data || null))
         .catch(() => setInstructions(null))
         .finally(() => setLoadingInstructions(false))
     } else {
       setInstructions(null)
     }
-  }, [mode, user?.country])
+  }, [mode, user?.country, user?.profile?.country])
 
   const load = () => {
     setLoading(true)
@@ -187,6 +192,29 @@ export default function WalletPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Input label="Amount" type="number" placeholder="Enter amount" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+
+                {/* Payment Instructions — shown first so user sees them immediately */}
+                {mode === 'deposit' && (
+                  <>
+                    {loadingInstructions && (
+                      <div className="flex items-center gap-2 py-2 text-xs text-text-muted">
+                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        Loading payment instructions...
+                      </div>
+                    )}
+
+                    {!loadingInstructions && instructions && (
+                      <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-2 text-sm">
+                        <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                          <p className="font-semibold text-primary text-sm">📋 Payment Instructions ({instructions.country})</p>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full card-gradient text-white font-medium">{instructions.method}</span>
+                        </div>
+                        <p className="whitespace-pre-wrap font-mono text-[11px] text-text-secondary leading-relaxed">{instructions.instructions}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-text-secondary">Payment Method</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -204,25 +232,9 @@ export default function WalletPage() {
                   </div>
                 </div>
 
+                {/* Deposit-only fields */}
                 {mode === 'deposit' && (
                   <>
-                    {loadingInstructions && (
-                      <div className="flex justify-center py-4">
-                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    )}
-
-                    {!loadingInstructions && instructions && (
-                      <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-2 text-sm text-text-secondary leading-relaxed">
-                        <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                          <p className="font-semibold text-primary">Payment Instructions ({instructions.country})</p>
-                          <span className="text-xs px-2 py-0.5 rounded-full card-gradient text-white font-medium">{instructions.method}</span>
-                        </div>
-                        <p className="whitespace-pre-wrap font-mono text-[11px] text-text-muted mt-1 leading-normal">{instructions.instructions}</p>
-                      </div>
-                    )}
-
-                    {/* Payment Proof Upload */}
                     <div className="space-y-1.5">
                       <label className="block text-sm font-medium text-text-secondary">Payment Proof (Screenshot)</label>
                       <div
@@ -312,6 +324,6 @@ export default function WalletPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </div >
   )
 }
