@@ -516,41 +516,40 @@ router.get('/settings', async (req, res) => {
 
 router.put('/settings', async (req, res) => {
   try {
-    const { platform_name, min_deposit, min_withdrawal, referral_bonus_percent, maintenance_mode, support_email, support_phone } = req.body;
+    const { platform_name, maintenance_mode } = req.body;
 
     const payload = {};
     if (platform_name !== undefined) payload.site_name = platform_name;
-    if (min_deposit !== undefined) payload.min_deposit = Number(min_deposit);
-    if (min_withdrawal !== undefined) payload.min_withdrawal = Number(min_withdrawal);
-    if (referral_bonus_percent !== undefined) payload.referral_bonus = Number(referral_bonus_percent);
     if (maintenance_mode !== undefined) payload.maintenance_mode = maintenance_mode;
+    payload.updated_at = new Date().toISOString();
 
-    const { data: existing } = await supabase
+    const { data: rows, error: fetchErr } = await supabase
       .from('settings')
       .select('id')
-      .maybeSingle();
+      .limit(1);
+
+    if (fetchErr) return res.status(400).json({ error: fetchErr.message });
+
+    const existing = rows && rows.length > 0 ? rows[0] : null;
 
     let result;
     if (existing) {
       const { data, error } = await supabase
         .from('settings')
-        .update({ ...payload, updated_at: new Date().toISOString() })
+        .update(payload)
         .eq('id', existing.id)
-        .select()
-        .single();
+        .select();
       if (error) return res.status(400).json({ error: error.message });
-      result = data;
+      result = data && data[0];
     } else {
       const { data, error } = await supabase
         .from('settings')
-        .insert({ ...payload, id: `settings_${Date.now()}` })
-        .select()
-        .single();
+        .insert({ ...payload, id: existing?.id || undefined });
       if (error) return res.status(400).json({ error: error.message });
       result = data;
     }
 
-    res.json(result);
+    res.json(result || payload);
   } catch (error) {
     res.status(500).json({ error: 'Failed to update settings' });
   }

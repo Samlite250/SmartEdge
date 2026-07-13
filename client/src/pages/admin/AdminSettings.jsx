@@ -20,12 +20,6 @@ const selectCls = "w-full px-4 py-2.5 rounded-xl border border-border/50 bg-surf
 export default function AdminSettings() {
   const [settings, setSettings] = useState({
     platform_name: 'SmartEdge',
-    min_deposit: '10',
-    max_deposit: '50000',
-    min_withdrawal: '5',
-    max_withdrawal: '10000',
-    referral_bonus_percent: '5',
-    withdrawal_fee_percent: '1',
     maintenance_mode: false,
     support_email: 'support@smartedge.com',
     support_phone: '+256 700 000 000',
@@ -149,7 +143,7 @@ export default function AdminSettings() {
           <div className="p-6 space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Platform Name">
-                <input className={inputCls} placeholder="SmartEdge" {...f('platform_name')} />
+                <input className={`${inputCls} opacity-60 cursor-not-allowed`} placeholder="SmartEdge" value={settings.platform_name ?? ''} readOnly />
               </Field>
               <Field label="Support Email">
                 <input className={inputCls} type="email" placeholder="support@smartedge.com" {...f('support_email')} />
@@ -175,36 +169,6 @@ export default function AdminSettings() {
               >
                 <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${settings.maintenance_mode ? 'translate-x-5' : 'translate-x-0'}`} />
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Financial */}
-        <div className="rounded-2xl border border-border/50 overflow-hidden" style={{ background: '#131A28' }}>
-          <div className="px-6 py-4 border-b border-border/50" style={{ background: '#0d1117' }}>
-            <h2 className="font-semibold text-text-primary">Financial Limits</h2>
-            <p className="text-xs text-text-muted mt-0.5">Deposit, withdrawal limits and fee configuration</p>
-          </div>
-          <div className="p-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Min Deposit ($)">
-                <input className={inputCls} type="number" placeholder="10" {...f('min_deposit')} />
-              </Field>
-              <Field label="Max Deposit ($)">
-                <input className={inputCls} type="number" placeholder="50000" {...f('max_deposit')} />
-              </Field>
-              <Field label="Min Withdrawal ($)">
-                <input className={inputCls} type="number" placeholder="5" {...f('min_withdrawal')} />
-              </Field>
-              <Field label="Max Withdrawal ($)">
-                <input className={inputCls} type="number" placeholder="10000" {...f('max_withdrawal')} />
-              </Field>
-              <Field label="Referral Bonus (%)" hint="Percentage bonus given to referrers">
-                <input className={inputCls} type="number" step="0.1" placeholder="5" {...f('referral_bonus_percent')} />
-              </Field>
-              <Field label="Withdrawal Fee (%)" hint="Platform fee charged on withdrawals">
-                <input className={inputCls} type="number" step="0.1" placeholder="1" {...f('withdrawal_fee_percent')} />
-              </Field>
             </div>
           </div>
         </div>
