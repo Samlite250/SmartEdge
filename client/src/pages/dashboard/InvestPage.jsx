@@ -356,7 +356,7 @@ export default function InvestPage() {
                             <div
                               onClick={() => {
                                 if (isLowBalance) {
-                                  navigate(`/dashboard/wallet?action=deposit&amount=${diff}`)
+                                  navigate(`/wallet?action=deposit&amount=${diff}`)
                                 } else {
                                   selectPlan(plan)
                                 }
@@ -442,7 +442,7 @@ export default function InvestPage() {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation()
-                                      navigate(`/dashboard/wallet?action=deposit&amount=${diff}`)
+                                      navigate(`/wallet?action=deposit&amount=${diff}`)
                                     }}
                                     className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-md shadow-emerald-500/20 transition-all duration-200"
                                   >
@@ -638,8 +638,8 @@ export default function InvestPage() {
                               You have {fmt(balance)} available, but this plan requires at least {fmt(selected.min_investment)}.
                             </p>
                             <a
-                              href="/dashboard/deposit"
-                              className="inline-flex items-center gap-1 mt-2.5 text-[11px] font-extrabold text-amber-400 hover:text-amber-300 transition-colors"
+                              href="/wallet?action=deposit"
+                              className="inline-flex items-center gap-1.5 mt-2.5 text-[11px] font-extrabold text-amber-400 hover:text-amber-300 transition-colors"
                             >
                               <Wallet className="w-3 h-3" /> Quick Deposit →
                             </a>
