@@ -54,12 +54,13 @@ router.get('/dashboard', async (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
 
-    const [users, investments, deposits, withdrawals, transactions] = await Promise.all([
+    const [users, investments, deposits, withdrawals, transactions, recentUsersRes] = await Promise.all([
       supabase.from('profiles').select('id, role, created_at, country', { count: 'exact' }),
       supabase.from('user_investments').select('id, amount, status', { count: 'exact' }).eq('status', 'active'),
       supabase.from('deposits').select('id, amount').gte('created_at', today),
       supabase.from('withdrawals').select('id, amount').eq('status', 'pending'),
       supabase.from('transactions').select('amount, created_at').gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString()),
+      supabase.from('profiles').select('id, full_name, email, status, country, created_at').order('created_at', { ascending: false }).limit(10),
     ]);
 
     const revenueData = transactions.data?.reduce((acc, t) => {
@@ -79,7 +80,7 @@ router.get('/dashboard', async (req, res) => {
       activeInvestments: investments.count || 0,
       todayDeposits: deposits.data?.reduce((sum, d) => sum + Number(d.amount), 0) || 0,
       pendingWithdrawals: withdrawals.count || 0,
-      recentUsers: users.data?.slice(-10).reverse() || [],
+      recentUsers: recentUsersRes.data || [],
       recentDeposits: deposits.data?.slice(-5).reverse() || [],
       pendingWithdrawalsList: withdrawals.data || [],
       revenueChart: revenueData || {},
