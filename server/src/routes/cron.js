@@ -5,17 +5,16 @@ const { processDailyReturns } = require('../services/dailyReturns');
 /**
  * POST /api/cron/daily-returns
  *
- * Vercel-compatible HTTP endpoint for triggering daily ROI distribution.
- * Protected by CRON_SECRET environment variable (Bearer token).
- *
- * Set up a free cron job at https://cron-job.org to call this endpoint
- * every day at 00:01 UTC with header:  Authorization: Bearer <CRON_SECRET>
+ * Called automatically by Vercel's native cron (defined in vercel.json — no third-party needed).
+ * Vercel sends x-vercel-cron: 1 on native invocations.
+ * Manual / test calls require Authorization: Bearer <CRON_SECRET>
  */
 router.post('/daily-returns', async (req, res) => {
     try {
-        // ── Security: validate Bearer secret ─────────────────────────────────
+        const isVercelCron = req.headers['x-vercel-cron'] === '1';
         const cronSecret = process.env.CRON_SECRET;
-        if (cronSecret) {
+
+        if (!isVercelCron && cronSecret) {
             const authHeader = req.headers['authorization'] || '';
             const provided = authHeader.replace(/^Bearer\s+/i, '').trim();
             if (provided !== cronSecret) {
@@ -23,11 +22,11 @@ router.post('/daily-returns', async (req, res) => {
             }
         }
 
-        console.log('[Cron HTTP] Triggered daily-returns via HTTP');
+        console.log(`[Cron] daily-returns triggered (vercel-native: ${isVercelCron})`);
         const result = await processDailyReturns();
         res.json({ ok: true, ...result });
     } catch (err) {
-        console.error('[Cron HTTP] daily-returns failed:', err.message);
+        console.error('[Cron] daily-returns failed:', err.message);
         res.status(500).json({ error: err.message });
     }
 });

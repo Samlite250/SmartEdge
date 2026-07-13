@@ -27,6 +27,21 @@ export default function WalletPage() {
   const toast = useToast()
   const userCurrency = user?.currency || wallet?.currency || 'USD'
 
+  const [instructions, setInstructions] = useState(null)
+  const [loadingInstructions, setLoadingInstructions] = useState(false)
+
+  useEffect(() => {
+    if (mode === 'deposit' && user?.country) {
+      setLoadingInstructions(true)
+      depositApi.getInstructions(user.country)
+        .then(data => setInstructions(data))
+        .catch(() => setInstructions(null))
+        .finally(() => setLoadingInstructions(false))
+    } else {
+      setInstructions(null)
+    }
+  }, [mode, user?.country])
+
   const load = () => {
     setLoading(true)
     Promise.all([
@@ -191,6 +206,22 @@ export default function WalletPage() {
 
                 {mode === 'deposit' && (
                   <>
+                    {loadingInstructions && (
+                      <div className="flex justify-center py-4">
+                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+
+                    {!loadingInstructions && instructions && (
+                      <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-2 text-sm text-text-secondary leading-relaxed">
+                        <div className="flex items-center justify-between pb-2 border-b border-border/50">
+                          <p className="font-semibold text-primary">Payment Instructions ({instructions.country})</p>
+                          <span className="text-xs px-2 py-0.5 rounded-full card-gradient text-white font-medium">{instructions.method}</span>
+                        </div>
+                        <p className="whitespace-pre-wrap font-mono text-[11px] text-text-muted mt-1 leading-normal">{instructions.instructions}</p>
+                      </div>
+                    )}
+
                     {/* Payment Proof Upload */}
                     <div className="space-y-1.5">
                       <label className="block text-sm font-medium text-text-secondary">Payment Proof (Screenshot)</label>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Save, RefreshCw, AlertTriangle } from 'lucide-react'
+import { Save, RefreshCw, AlertTriangle, Plus, Trash2, Edit2, X } from 'lucide-react'
 import { useToast } from '../../components/ui/Toast'
 import { adminApi } from '../../services/api'
+import { CountrySelect } from '../../components/ui/CountrySelect'
 
 function Field({ label, hint, children }) {
   return (
@@ -33,10 +34,21 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false)
   const toast = useToast()
 
+  const [instructionsList, setInstructionsList] = useState([])
+  const [editingInstruction, setEditingInstruction] = useState(null)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [formState, setFormState] = useState({ country: '', method: '', instructions: '' })
+
   const load = () => {
     setLoading(true)
-    adminApi.getSettings()
-      .then(data => { if (data) setSettings(s => ({ ...s, ...data })) })
+    Promise.all([
+      adminApi.getSettings(),
+      adminApi.getInstructions()
+    ])
+      .then(([settingsData, listData]) => {
+        if (settingsData) setSettings(s => ({ ...s, ...settingsData }))
+        if (listData) setInstructionsList(listData)
+      })
       .catch(() => { })
       .finally(() => setLoading(false))
   }
@@ -54,6 +66,46 @@ export default function AdminSettings() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleSaveInstruction = async (e) => {
+    e.preventDefault()
+    if (!formState.country?.trim() || !formState.method?.trim() || !formState.instructions?.trim()) {
+      return toast('Please fill in all fields', 'warning')
+    }
+    try {
+      await adminApi.upsertInstructions(formState)
+      toast('Payment instruction saved successfully!', 'success')
+      setFormState({ country: '', method: '', instructions: '' })
+      setEditingInstruction(null)
+      setShowAddForm(false)
+      load()
+    } catch (err) {
+      toast(err.response?.data?.error || 'Failed to save instruction', 'error')
+    }
+  }
+
+  const handleDeleteInstruction = async (id) => {
+    if (!confirm('Are you sure you want to delete instructions for this country?')) return
+    try {
+      await adminApi.deleteInstructions(id)
+      toast('Instruction deleted successfully!', 'success')
+      load()
+    } catch {
+      toast('Failed to delete instruction', 'error')
+    }
+  }
+
+  const startEdit = (item) => {
+    setEditingInstruction(item.id)
+    setFormState({ id: item.id, country: item.country, method: item.method, instructions: item.instructions })
+    setShowAddForm(true)
+  }
+
+  const startAdd = () => {
+    setEditingInstruction(null)
+    setFormState({ country: '', method: '', instructions: '' })
+    setShowAddForm(true)
   }
 
   const f = (k) => ({
@@ -154,6 +206,131 @@ export default function AdminSettings() {
                 <input className={inputCls} type="number" step="0.1" placeholder="1" {...f('withdrawal_fee_percent')} />
               </Field>
             </div>
+          </div>
+        </div>
+
+        {/* Payment Instructions Section */}
+        <div className="rounded-2xl border border-border/50 overflow-hidden" style={{ background: '#131A28' }}>
+          <div className="px-6 py-4 border-b border-border/50 flex items-center justify-between" style={{ background: '#0d1117' }}>
+            <div>
+              <h2 className="font-semibold text-text-primary">Country Payment Instructions</h2>
+              <p className="text-xs text-text-muted mt-0.5">Customize payment instructions shown on deposit pages by country</p>
+            </div>
+            {!showAddForm && (
+              <button
+                type="button"
+                onClick={startAdd}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Country
+              </button>
+            )}
+          </div>
+          <div className="p-6 space-y-4">
+            {showAddForm && (
+              <div className="p-4 rounded-xl border border-border/50 bg-surface/50 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-border/20">
+                  <h3 className="text-sm font-semibold text-text-primary">
+                    {editingInstruction ? 'Edit Instructions' : 'Add Country Instructions'}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddForm(false); setEditingInstruction(null); }}
+                    className="p-1 rounded-lg hover:bg-surface text-text-muted"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {editingInstruction ? (
+                    <Field label="Country">
+                      <input className={`${inputCls} opacity-60`} value={formState.country} readOnly />
+                    </Field>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <CountrySelect
+                        value={formState.country}
+                        onChange={country => setFormState({ ...formState, country })}
+                      />
+                    </div>
+                  )}
+                  <Field label="Payment Method" hint="e.g. Rwanda Mobile Money, Burundi Payment">
+                    <input
+                      className={inputCls}
+                      placeholder="e.g. MTN Mobile Money"
+                      value={formState.method}
+                      onChange={e => setFormState({ ...formState, method: e.target.value })}
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Instructions (Preserves layout and newlines)">
+                  <textarea
+                    rows={6}
+                    className={`${inputCls} font-mono text-xs`}
+                    placeholder="Enter instructions, dial codes, numbers..."
+                    value={formState.instructions}
+                    onChange={e => setFormState({ ...formState, instructions: e.target.value })}
+                  />
+                </Field>
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddForm(false); setEditingInstruction(null); }}
+                    className="px-4 py-2 rounded-xl border border-border/50 text-xs text-text-secondary hover:text-text-primary transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveInstruction}
+                    className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    Save Country Instructions
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {instructionsList.length === 0 ? (
+              <p className="text-text-muted text-xs text-center py-4">No country-specific instructions configured yet. Default methods apply.</p>
+            ) : (
+              <div className="divide-y divide-border/30">
+                {instructionsList.map(item => (
+                  <div key={item.id} className="py-4 first:pt-0 last:pb-0 flex items-start justify-between gap-4">
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-text-primary text-sm">{item.country}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full card-gradient text-white font-medium">{item.method}</span>
+                      </div>
+                      <p className="font-mono text-xs text-text-muted whitespace-pre-wrap line-clamp-3 bg-surface/30 p-2.5 rounded-lg border border-border/30 mt-1.5">
+                        {item.instructions}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(item)}
+                        className="p-2 rounded-lg hover:bg-surface text-text-secondary hover:text-primary transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteInstruction(item.id)}
+                        className="p-2 rounded-lg hover:bg-surface text-text-secondary hover:text-danger transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

@@ -178,6 +178,16 @@ CREATE TABLE settings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- PAYMENT INSTRUCTIONS
+CREATE TABLE payment_instructions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  country VARCHAR(100) UNIQUE NOT NULL,
+  method VARCHAR(100) NOT NULL,
+  instructions TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- INDEXES
 CREATE INDEX idx_profiles_email ON profiles(email);
 CREATE INDEX idx_profiles_referral_code ON profiles(referral_code);
@@ -204,6 +214,7 @@ ALTER TABLE withdrawals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_investments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_instructions ENABLE ROW LEVEL SECURITY;
 
 -- RLS POLICIES
 -- Profiles: users can read/update own profile, admins can read all
@@ -256,6 +267,13 @@ CREATE POLICY "Users can read own notifications" ON notifications
 CREATE POLICY "Users can update own notifications" ON notifications
   FOR UPDATE USING (auth.uid() = user_id);
 
+-- Payment Instructions
+CREATE POLICY "Anyone can read payment instructions" ON payment_instructions
+  FOR SELECT USING (true);
+
+CREATE POLICY "Admin can modify payment instructions" ON payment_instructions
+  FOR ALL USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'admin');
+
 -- TRIGGER to create profile on signup
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
@@ -296,3 +314,39 @@ INSERT INTO investment_plans (name, description, coin_id, min_investment, max_in
   ('Elite Plan', 'The ultimate investment experience', (SELECT id FROM cryptocurrencies WHERE symbol = 'BTC'), 10000, 100000, 2.00, 90, 180.00, 'high', '["Elite daily returns","Dedicated account manager","Custom strategies","Instant priority withdrawals","Quarterly bonuses"]'),
   ('Staking Plan', 'Earn passive income through staking', (SELECT id FROM cryptocurrencies WHERE symbol = 'ADA'), 50, 5000, 0.35, 30, 10.50, 'low', '["Staking rewards","Low risk","Flexible period","Auto-compound"]'),
   ('Gold Plan', 'Premium gold-tier investment opportunity', (SELECT id FROM cryptocurrencies WHERE symbol = 'LINK'), 500, 50000, 1.50, 60, 90.00, 'medium', '["Gold tier returns","Market analysis","Dedicated support","Flexible withdrawal"]');
+
+-- DEFAULT PAYMENT INSTRUCTIONS
+INSERT INTO payment_instructions (country, method, instructions) VALUES
+  ('Uganda', 'Rwanda Mobile Money', 'How to send VIP plan via Rwanda mobile money 
+
+Dial *182#
+1.Choose 1 send money 
+2.Choose 3 international transfer 
+3.Country /Rwanda 
+4.Number MTN:250795719072
+Airtel:250738546399
+5.Enter amount to send 
+5.Check Names: Razard DUKUZUMUREMYI
+6.Reason: gift 
+7.Enter password to Confirm 
+
+After Deposit remember to submit payment Proof!'),
+  ('Burundi', 'Burundi Payment', 'Uko wariha umutahe muri Smart Edge
+
+Pfonda *163#*
+
+1.kurungika
+
+2.Numero:68457118  
+
+3._Shiramwo umutahe
+
+N.B: UMUTAHE MUNINI NI 3.000.000 FBU
+
+4.Amazina: Ndayikeza Elisabeth
+5. Shiramwo Pin hama Wemeze'),
+  ('Rwanda', 'Momo Pay', 'Dial *182*8*1#
+Enter Momo Code: 223468
+Enter Amount To Deposit
+Check if names is Samuel
+Enter Pin to comfirm');

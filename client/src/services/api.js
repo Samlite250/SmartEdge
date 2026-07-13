@@ -32,6 +32,7 @@ export const depositApi = {
   getMethods: () => api.get('/deposits/methods').then(r => r.data),
   create: (data) => api.post('/deposits', data).then(r => r.data),
   getAll: () => api.get('/deposits').then(r => r.data),
+  getInstructions: (country) => api.get(`/deposits/instructions/country/${encodeURIComponent(country)}`).then(r => r.data),
 }
 
 export const withdrawalApi = {
@@ -79,4 +80,7 @@ export const adminApi = {
   getReferrals: () => api.get('/admin/referrals').then(r => r.data),
   getSettings: () => api.get('/admin/settings').then(r => r.data),
   updateSettings: (data) => api.put('/admin/settings', data).then(r => r.data),
+  getInstructions: () => api.get('/deposits/instructions').then(r => r.data),
+  upsertInstructions: (data) => api.post('/deposits/instructions', data).then(r => r.data),
+  deleteInstructions: (id) => api.delete(`/deposits/instructions/${id}`).then(r => r.data),
 }

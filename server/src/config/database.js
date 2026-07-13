@@ -152,6 +152,32 @@ const db = {
   settings: [
     { id: 'settings_1', site_name: 'Smart Edge', site_description: 'Investment Platform', logo_url: null, favicon_url: null, min_deposit: 10, min_withdrawal: 5, referral_bonus: 5, maintenance_mode: false, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   ],
+  payment_instructions: [
+    {
+      id: 'inst_ug',
+      country: 'Uganda',
+      method: 'Rwanda Mobile Money',
+      instructions: `How to send VIP plan via Rwanda mobile money \n\nDial *182#\n1.Choose 1 send money \n2.Choose 3 international transfer \n3.Country /Rwanda \n4.Number MTN:250795719072\nAirtel:250738546399\n5.Enter amount to send \n5.Check Names: Razard DUKUZUMUREMYI\n6.Reason: gift \n7.Enter password to Confirm \n\nAfter Deposit remember to submit payment Proof!`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'inst_bi',
+      country: 'Burundi',
+      method: 'Burundi Payment',
+      instructions: `Uko wariha umutahe muri Smart Edge\n\nPfonda *163#*\n\n1.kurungika\n\n2.Numero:68457118  \n\n3._Shiramwo umutahe\n\nN.B: UMUTAHE MUNINI NI 3.000.000 FBU\n\n4.Amazina: Ndayikeza Elisabeth\n5. Shiramwo Pin hama Wemeze`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'inst_rw',
+      country: 'Rwanda',
+      method: 'Momo Pay',
+      instructions: `Dial *182*8*1#\nEnter Momo Code: 223468\nEnter Amount To Deposit\nCheck if names is Samuel\nEnter Pin to comfirm`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ],
 };
 
 const sessions = new Map();
@@ -190,6 +216,7 @@ class QueryBuilder {
     this._limitVal = null;
     this._offsetVal = null;
     this._singleMode = false;
+    this._maybeSingleMode = false;
     this._selectStr = null;
     this._countExact = false;
   }
@@ -239,7 +266,7 @@ class QueryBuilder {
   limit(val) { this._limitVal = val; return this; }
   range(start, end) { this._offsetVal = start; this._limitVal = end - start + 1; return this; }
   single() { this._singleMode = true; return this; }
-  maybeSingle() { this._singleMode = true; return this; }
+  maybeSingle() { this._singleMode = true; this._maybeSingleMode = true; return this; }
   contains(col, val) { this._filters.push({ col, val: JSON.stringify(val), contains: true }); return this; }
 
   then(resolve, reject) {
@@ -264,8 +291,9 @@ class QueryBuilder {
         for (const item of items) {
           Object.assign(item, this._values, { updated_at: new Date().toISOString() });
         }
+        const err = (items.length === 0 && !this._maybeSingleMode) ? { message: 'Not found', code: 'PGRST116' } : null;
         const result = this._singleMode
-          ? { data: items[0] || null, error: items.length === 0 ? { message: 'Not found', code: 'PGRST116' } : null }
+          ? { data: items[0] || null, error: err }
           : { data: items, error: null };
         return resolve(result);
       }
@@ -294,7 +322,8 @@ class QueryBuilder {
       resolveSubQuery(this.table, this._selectStr);
 
       if (this._singleMode) {
-        resolve({ data: data.length > 0 ? data[0] : null, error: data.length === 0 ? { message: 'Not found', code: 'PGRST116' } : null });
+        const error = (data.length === 0 && !this._maybeSingleMode) ? { message: 'Not found', code: 'PGRST116' } : null;
+        resolve({ data: data.length > 0 ? data[0] : null, error });
       } else {
         resolve({ data, error: null, count: this._countExact ? data.length : undefined });
       }
