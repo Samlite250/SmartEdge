@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { useToast } from '../../components/ui/Toast'
-import { investmentApi, walletApi } from '../../services/api'
+import { investmentApi, userApi } from '../../services/api'
 import { formatCurrency } from '../../lib/utils'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -77,8 +77,8 @@ function ActiveInvestCard({ inv, currency, i }) {
               <p className="text-xs text-white/40 mt-0.5">Started {new Date(inv.start_date || inv.created_at).toLocaleDateString()}</p>
             </div>
             <span className={`text-[10px] font-semibold px-2 py-1 rounded-full border ${inv.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25' :
-                inv.status === 'completed' ? 'bg-sky-500/10 text-sky-400 border-sky-500/25' :
-                  'bg-white/5 text-white/40 border-white/10'
+              inv.status === 'completed' ? 'bg-sky-500/10 text-sky-400 border-sky-500/25' :
+                'bg-white/5 text-white/40 border-white/10'
               }`}>
               {inv.status === 'active' ? '● Active' : inv.status === 'completed' ? '✓ Completed' : inv.status}
             </span>
@@ -134,6 +134,7 @@ export default function InvestPage() {
   const [amount, setAmount] = useState('')
   const [investing, setInvesting] = useState(false)
   const [balance, setBalance] = useState(0)
+  const [balanceLoaded, setBalanceLoaded] = useState(false)
   const toast = useToast()
 
   const userCurrency = user?.currency || 'USD'
@@ -146,11 +147,14 @@ export default function InvestPage() {
     setLoading(true)
     Promise.all([
       investmentApi.getPlans(country),
-      walletApi.getWallet().catch(() => ({ balance: 0 })),
+      userApi.getDashboard().catch(() => null),
     ])
-      .then(([plansData, wallet]) => {
+      .then(([plansData, dashboard]) => {
         setPlans(plansData)
-        setBalance(Number(wallet.balance) || 0)
+        if (dashboard?.wallet) {
+          setBalance(Number(dashboard.wallet.balance) || 0)
+        }
+        setBalanceLoaded(true)
       })
       .catch(() => toast('Failed to load investment plans', 'error'))
       .finally(() => setLoading(false))
@@ -178,7 +182,7 @@ export default function InvestPage() {
     if (!selected || !amount) return null
     if (num < selected.min_investment) return `Minimum is ${fmt(selected.min_investment)}`
     if (selected.max_investment && num > selected.max_investment) return `Maximum is ${fmt(selected.max_investment)}`
-    if (num > balance) return `Insufficient balance — you have ${fmt(balance)}`
+    if (num > balance && balanceLoaded) return `Insufficient balance — you have ${fmt(balance)}`
     return null
   }, [amount, selected, balance])
 
@@ -234,7 +238,7 @@ export default function InvestPage() {
     const base = selected.min_investment
     const max = selected.max_investment || Infinity
     const multiples = [1, 2, 5, 10]
-    return multiples.map(m => base * m).filter(v => v <= max && v <= balance)
+    return multiples.map(m => base * m).filter(v => v <= max && (!balanceLoaded || v <= balance))
   }, [selected, balance])
 
   /* ══════════════════════════════════════════════════════════ */
@@ -292,8 +296,8 @@ export default function InvestPage() {
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === t.key
-                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25'
-                : 'text-white/40 hover:text-white/70'
+              ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25'
+              : 'text-white/40 hover:text-white/70'
               }`}
           >
             {t.icon}{t.label}
@@ -336,7 +340,7 @@ export default function InvestPage() {
                   const dailyRet = plan.min_investment * plan.daily_return / 100
                   const totalRet = dailyRet * plan.duration
                   const payout = plan.min_investment + totalRet
-                  const canAfford = plan.min_investment <= balance
+                  const canAfford = !balanceLoaded || plan.min_investment <= balance
                   const isPopular = !isVIP && i === 2
 
                   return (
@@ -349,10 +353,10 @@ export default function InvestPage() {
                       <div
                         onClick={() => canAfford && selectPlan(plan)}
                         className={`relative overflow-hidden rounded-2xl border transition-all duration-200 ${isChosen
-                            ? `border-white/20 shadow-2xl ${colors.glow} ring-1 ${colors.ring} -translate-y-1`
-                            : canAfford
-                              ? 'border-white/6 hover:border-white/15 hover:-translate-y-0.5 cursor-pointer'
-                              : 'border-white/4 opacity-50 cursor-not-allowed'
+                          ? `border-white/20 shadow-2xl ${colors.glow} ring-1 ${colors.ring} -translate-y-1`
+                          : canAfford
+                            ? 'border-white/6 hover:border-white/15 hover:-translate-y-0.5 cursor-pointer'
+                            : 'border-white/4 opacity-50 cursor-not-allowed'
                           } bg-[#0f1623]`}
                       >
                         {/* Top accent bar */}
@@ -434,10 +438,10 @@ export default function InvestPage() {
                             onClick={(e) => { e.stopPropagation(); if (canAfford) selectPlan(plan) }}
                             disabled={!canAfford}
                             className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 ${isChosen
-                                ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg ${colors.glow}`
-                                : canAfford
-                                  ? 'bg-white/6 text-white/70 hover:bg-white/10 border border-white/8'
-                                  : 'bg-white/3 text-white/20 cursor-not-allowed'
+                              ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg ${colors.glow}`
+                              : canAfford
+                                ? 'bg-white/6 text-white/70 hover:bg-white/10 border border-white/8'
+                                : 'bg-white/3 text-white/20 cursor-not-allowed'
                               }`}
                           >
                             {isChosen ? (
@@ -514,8 +518,8 @@ export default function InvestPage() {
                               min={selected.min_investment}
                               max={selected.max_investment || undefined}
                               className={`w-full pl-14 pr-4 py-3.5 bg-white/5 border rounded-xl text-white text-xl font-bold focus:outline-none transition-all placeholder:text-white/20 placeholder:text-base placeholder:font-normal ${amountError
-                                  ? 'border-rose-500/50 focus:border-rose-500/70 focus:ring-2 focus:ring-rose-500/10'
-                                  : 'border-white/10 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10'
+                                ? 'border-rose-500/50 focus:border-rose-500/70 focus:ring-2 focus:ring-rose-500/10'
+                                : 'border-white/10 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10'
                                 }`}
                             />
                           </div>
@@ -536,8 +540,8 @@ export default function InvestPage() {
                                   key={val}
                                   onClick={() => setAmount(String(val))}
                                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150 ${num === val
-                                      ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20'
-                                      : 'bg-white/5 text-white/50 border-white/8 hover:border-indigo-500/30 hover:bg-indigo-500/8 hover:text-white/80'
+                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20'
+                                    : 'bg-white/5 text-white/50 border-white/8 hover:border-indigo-500/30 hover:bg-indigo-500/8 hover:text-white/80'
                                     }`}
                                 >
                                   {fmt(val)}
@@ -590,8 +594,8 @@ export default function InvestPage() {
                             onClick={handleInvest}
                             disabled={!canInvest || investing}
                             className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 ${canInvest && !investing
-                                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0'
-                                : 'bg-white/5 text-white/25 cursor-not-allowed'
+                              ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0'
+                              : 'bg-white/5 text-white/25 cursor-not-allowed'
                               }`}
                           >
                             {investing ? (
