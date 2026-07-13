@@ -81,6 +81,8 @@ export const adminApi = {
   createAnnouncement: (data) => api.post('/admin/announcements', data).then(r => r.data),
   deleteAnnouncement: (id) => api.delete(`/admin/announcements/${id}`).then(r => r.data),
   getTransactions: (page = 1, limit = 20) => api.get(`/admin/transactions?page=${page}&limit=${limit}`).then(r => r.data),
+  approveTransaction: (id) => api.put(`/admin/transactions/${id}/approve`).then(r => r.data),
+  deleteTransaction: (id) => api.delete(`/admin/transactions/${id}`).then(r => r.data),
   getReferrals: () => api.get('/admin/referrals').then(r => r.data),
   getSettings: () => api.get('/admin/settings').then(r => r.data),
   updateSettings: (data) => api.put('/admin/settings', data).then(r => r.data),

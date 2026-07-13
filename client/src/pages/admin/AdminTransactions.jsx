@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { RefreshCw, ArrowDownCircle, ArrowUpCircle, Gift, TrendingUp } from 'lucide-react'
+import { RefreshCw, ArrowDownCircle, ArrowUpCircle, Gift, TrendingUp, CheckCircle, Trash2 } from 'lucide-react'
 import { useToast } from '../../components/ui/Toast'
 import { adminApi } from '../../services/api'
 import { formatCurrency, formatDateTime } from '../../lib/utils'
@@ -26,7 +26,7 @@ function StatusBadge({ status }) {
   )
 }
 
-function SkeletonTableRows({ cols = 6, rows = 6 }) {
+function SkeletonTableRows({ cols = 7, rows = 6 }) {
   return Array.from({ length: rows }).map((_, i) => (
     <tr key={i} className="border-b border-border/30 animate-pulse">
       {Array.from({ length: cols }).map((_, j) => (
@@ -44,6 +44,7 @@ export default function AdminTransactions() {
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [actionLoading, setActionLoading] = useState(null) // track per-row loading
   const toast = useToast()
 
   const load = () => {
@@ -55,6 +56,33 @@ export default function AdminTransactions() {
   }
 
   useEffect(() => { load() }, [])
+
+  const approve = async (id) => {
+    setActionLoading(id + '_approve')
+    try {
+      await adminApi.approveTransaction(id)
+      toast('Transaction approved', 'success')
+      load()
+    } catch {
+      toast('Failed to approve transaction', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const remove = async (id) => {
+    if (!window.confirm('Delete this transaction permanently? This cannot be undone.')) return
+    setActionLoading(id + '_delete')
+    try {
+      await adminApi.deleteTransaction(id)
+      toast('Transaction deleted', 'success')
+      setTransactions(prev => prev.filter(t => t.id !== id))
+    } catch {
+      toast('Failed to delete transaction', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
 
   const filtered = filter === 'all' ? transactions : transactions.filter(t => t.type === filter)
 
@@ -101,14 +129,15 @@ export default function AdminTransactions() {
                 <th className="px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Description</th>
                 <th className="px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Date</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">
               {loading ? (
-                <SkeletonTableRows cols={6} />
+                <SkeletonTableRows cols={7} />
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-text-muted">
+                  <td colSpan={7} className="py-16 text-center text-text-muted">
                     <svg className="w-10 h-10 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
@@ -119,6 +148,8 @@ export default function AdminTransactions() {
                 filtered.map(t => {
                   const meta = typeConfig[t.type] || { icon: ArrowDownCircle, color: 'text-text-muted', bg: 'bg-surface', label: t.type }
                   const Icon = meta.icon
+                  const isApprovingThis = actionLoading === t.id + '_approve'
+                  const isDeletingThis = actionLoading === t.id + '_delete'
                   return (
                     <tr key={t.id} className="hover:bg-white/[0.02] transition-colors text-sm">
                       <td className="px-4 py-3">
@@ -137,6 +168,28 @@ export default function AdminTransactions() {
                       <td className="px-4 py-3 text-xs text-text-muted max-w-[160px] truncate">{t.description || '—'}</td>
                       <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
                       <td className="px-4 py-3 text-xs text-text-muted">{formatDateTime(t.created_at)}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          {t.status === 'pending' && (
+                            <button
+                              onClick={() => approve(t.id)}
+                              disabled={!!actionLoading}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 text-success border border-success/20 text-xs font-semibold hover:bg-success/20 transition-colors disabled:opacity-50"
+                            >
+                              <CheckCircle className={`w-3.5 h-3.5 ${isApprovingThis ? 'animate-spin' : ''}`} />
+                              {isApprovingThis ? '...' : 'Approve'}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => remove(t.id)}
+                            disabled={!!actionLoading}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger/10 text-danger border border-danger/20 text-xs font-semibold hover:bg-danger/20 transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 className={`w-3.5 h-3.5 ${isDeletingThis ? 'animate-spin' : ''}`} />
+                            {isDeletingThis ? '...' : 'Delete'}
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   )
                 })

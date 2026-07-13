@@ -625,6 +625,38 @@ router.get('/transactions', async (req, res) => {
   }
 });
 
+// Approve a pending transaction (mark as completed)
+router.put('/transactions/:id/approve', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .update({ status: 'completed' })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to approve transaction' });
+  }
+});
+
+// Delete a transaction permanently
+router.delete('/transactions/:id', async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete transaction' });
+  }
+});
+
 router.get('/referrals', async (req, res) => {
   try {
     const { data, error } = await supabase
