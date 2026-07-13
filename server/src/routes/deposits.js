@@ -30,14 +30,13 @@ router.post('/', authenticate, async (req, res) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('country, currency')
+      .select('country')
       .eq('id', userId)
       .single();
 
     const { data, error } = await supabase.from('deposits').insert({
       user_id: userId,
       amount,
-      currency: profile?.currency || 'USD',
       payment_method: paymentMethod,
       reference: generateDepositRef(),
       status: 'pending',
