@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Shield, ShieldOff, Trash2, X } from 'lucide-react'
+import { Search, Shield, ShieldOff, Trash2, X, Crown } from 'lucide-react'
 import { useToast } from '../../components/ui/Toast'
 import { adminApi } from '../../services/api'
 import { formatDate, getStatusColor } from '../../lib/utils'
@@ -66,6 +66,17 @@ export default function AdminUsers() {
       toast(`User ${newStatus}`, 'success')
       load()
     } catch { toast('Failed to update status', 'error') }
+  }
+
+  const toggleRole = async (id, currentRole) => {
+    const newRole = currentRole === 'admin' ? 'user' : 'admin'
+    const action = newRole === 'admin' ? 'grant admin privileges to' : 'remove admin privileges from'
+    if (!confirm(`Are you sure you want to ${action} this user?`)) return
+    try {
+      await adminApi.updateUserRole(id, newRole)
+      toast(`User ${newRole === 'admin' ? 'promoted to admin' : 'demoted to user'}`, 'success')
+      load()
+    } catch { toast('Failed to update role', 'error') }
   }
 
   const deleteUser = async (id) => {
@@ -187,6 +198,16 @@ export default function AdminUsers() {
                     <td className="px-4 py-3 text-text-muted text-xs">{formatDate(u.created_at)}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1">
+                        <button
+                          onClick={() => toggleRole(u.id, u.role)}
+                          title={u.role === 'admin' ? 'Demote to user' : 'Promote to admin'}
+                          className={`p-1.5 rounded-lg transition-colors ${u.role === 'admin'
+                            ? 'hover:bg-warning/10 text-amber-400 hover:text-warning'
+                            : 'hover:bg-blue-500/10 text-text-muted hover:text-blue-400'
+                          }`}
+                        >
+                          <Crown className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => toggleStatus(u.id, u.status)}
                           title={u.status === 'active' ? 'Suspend user' : 'Activate user'}

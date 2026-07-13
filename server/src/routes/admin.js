@@ -122,6 +122,26 @@ router.put('/users/:id/status', async (req, res) => {
   }
 });
 
+router.put('/users/:id/role', async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!['user', 'admin'].includes(role)) {
+      return res.status(400).json({ error: 'Role must be "user" or "admin"' });
+    }
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ role })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update user role' });
+  }
+});
+
 router.delete('/users/:id', async (req, res) => {
   try {
     const { error } = await supabase

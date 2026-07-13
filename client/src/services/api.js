@@ -61,6 +61,7 @@ export const adminApi = {
   getDashboard: () => api.get('/admin/dashboard').then(r => r.data),
   getUsers: () => api.get('/admin/users').then(r => r.data),
   updateUserStatus: (id, status) => api.put(`/admin/users/${id}/status`, { status }).then(r => r.data),
+  updateUserRole: (id, role) => api.put(`/admin/users/${id}/role`, { role }).then(r => r.data),
   deleteUser: (id) => api.delete(`/admin/users/${id}`).then(r => r.data),
   getPlans: () => api.get('/admin/investment-plans').then(r => r.data),
   getAllPlans: () => api.get('/admin/all-plans').then(r => r.data),
