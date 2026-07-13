@@ -15,6 +15,7 @@ const adminRoutes = require('./routes/admin');
 const marketRoutes = require('./routes/markets');
 const announcementRoutes = require('./routes/announcements');
 const referralRoutes = require('./routes/referrals');
+const cronRoutes = require('./routes/cron');
 const cron = require('node-cron');
 const { processDailyReturns } = require('./services/dailyReturns');
 
@@ -60,6 +61,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/markets', marketRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/referrals', referralRoutes);
+app.use('/api/cron', cronRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -78,9 +80,10 @@ app.use((req, res) => {
 const isVercel = process.env.VERCEL === '1';
 
 if (!isVercel) {
+  // Run at midnight every day (non-Vercel environments)
   cron.schedule('0 0 * * *', () => {
     console.log('[Cron] Running daily returns...');
-    processDailyReturns();
+    processDailyReturns().catch(err => console.error('[Cron] uncaught:', err.message));
   });
 
   app.listen(config.port, () => {
