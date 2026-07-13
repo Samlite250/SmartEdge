@@ -63,6 +63,8 @@ export const adminApi = {
   updateUserStatus: (id, status) => api.put(`/admin/users/${id}/status`, { status }).then(r => r.data),
   deleteUser: (id) => api.delete(`/admin/users/${id}`).then(r => r.data),
   getPlans: () => api.get('/admin/investment-plans').then(r => r.data),
+  getAllPlans: () => api.get('/admin/all-plans').then(r => r.data),
+  getUserInvestments: () => api.get('/admin/user-investments').then(r => r.data),
   createPlan: (data) => api.post('/admin/investment-plans', data).then(r => r.data),
   updatePlan: (id, data) => api.put(`/admin/investment-plans/${id}`, data).then(r => r.data),
   deletePlan: (id) => api.delete(`/admin/investment-plans/${id}`).then(r => r.data),

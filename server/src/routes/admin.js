@@ -194,6 +194,109 @@ router.delete('/investment-plans/:id', async (req, res) => {
   }
 });
 
+router.get('/user-investments', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_investments')
+      .select('*, investment_plans!plan_id(name, daily_return, duration, total_return, risk_level, description), profiles!user_id(full_name, email, username, country, currency)')
+      .order('created_at', { ascending: false });
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    const enriched = (data || []).map(inv => {
+      const daysPassed = inv.start_date
+        ? Math.floor((Date.now() - new Date(inv.start_date).getTime()) / 86400000)
+        : (inv.days_passed || 0);
+      const daysRemaining = Math.max(0, (inv.duration || 30) - daysPassed);
+      const amount = Number(inv.amount) || 0;
+      const dailyReturnPct = Number(inv.investment_plans?.daily_return || inv.daily_return || 0);
+      const dailyReturnAmt = amount * (dailyReturnPct / 100);
+      const totalEarned = dailyReturnAmt * daysPassed;
+      const remainingReturn = dailyReturnAmt * daysRemaining;
+
+      return {
+        id: inv.id,
+        user_id: inv.user_id,
+        user_name: inv.profiles?.full_name || inv.profiles?.username || 'Unknown',
+        user_email: inv.profiles?.email || '',
+        user_country: inv.profiles?.country || 'Unknown',
+        user_currency: inv.profiles?.currency || 'USD',
+        plan_name: inv.investment_plans?.name || inv.plan_id,
+        amount,
+        daily_return_pct: dailyReturnPct,
+        daily_return_amt: dailyReturnAmt,
+        total_earned: totalEarned,
+        remaining_return: remainingReturn,
+        duration: inv.duration || 30,
+        days_passed: daysPassed,
+        days_remaining: daysRemaining,
+        status: inv.status,
+        start_date: inv.start_date,
+        end_date: inv.end_date,
+        created_at: inv.created_at,
+      };
+    });
+
+    res.json(enriched);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user investments' });
+  }
+});
+
+router.get('/all-plans', async (req, res) => {
+  try {
+    const { country } = require('../config/countryPlans');
+    const { VIP_COUNTRIES, getCountryPlans } = require('../config/countryPlans');
+
+    const { data: dbPlans, error } = await supabase
+      .from('investment_plans')
+      .select('*, cryptocurrencies(*)')
+      .order('min_investment', { ascending: true });
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    const result = (dbPlans || []).map(p => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      min_investment: Number(p.min_investment),
+      max_investment: p.max_investment ? Number(p.max_investment) : null,
+      daily_return: Number(p.daily_return),
+      duration: p.duration,
+      total_return: Number(p.total_return),
+      risk_level: p.risk_level,
+      status: p.status,
+      country: null,
+      type: 'global',
+    }));
+
+    for (const c of VIP_COUNTRIES) {
+      const plans = getCountryPlans(c);
+      if (!plans) continue;
+      for (const p of plans) {
+        result.push({
+          id: `vip_${c.toLowerCase()}_${p.level}`,
+          name: `${p.name} (${c})`,
+          description: `${c} VIP ${p.level} — ${p.duration} days, ${p.daily_return}% daily`,
+          min_investment: p.min,
+          max_investment: p.max,
+          daily_return: p.daily_return,
+          duration: p.duration,
+          total_return: p.daily_return * p.duration,
+          risk_level: 'low',
+          status: 'active',
+          country: c,
+          type: 'vip',
+        });
+      }
+    }
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch all plans' });
+  }
+});
+
 router.get('/deposits', async (req, res) => {
   try {
     const { data, error } = await supabase
