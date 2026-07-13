@@ -57,7 +57,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-text-primary mb-2">Welcome back</h1>
           <p className="text-text-secondary mb-8">Sign in to your account</p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 border border-white/10 rounded-2xl p-6">
             <Input
               label="Email"
               type="email"

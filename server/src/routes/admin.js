@@ -256,6 +256,51 @@ router.put('/deposits/:id/approve', async (req, res) => {
       description: `Deposit via ${deposit.payment_method}`,
     });
 
+    // Referral bonus: 10% of first approved deposit
+    const { data: referral } = await supabase
+      .from('referrals')
+      .select('*')
+      .eq('referred_id', deposit.user_id)
+      .maybeSingle();
+
+    if (referral && referral.status === 'pending') {
+      const bonusAmount = Number(deposit.amount) * 0.10;
+      const bonusRef = 'REF' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+
+      await supabase.from('referrals').update({
+        bonus: bonusAmount,
+        status: 'paid',
+      }).eq('id', referral.id);
+
+      const { data: referrerWallet } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', referral.referrer_id)
+        .maybeSingle();
+
+      if (referrerWallet) {
+        await supabase.from('wallets').update({
+          balance: Number(referrerWallet.balance) + bonusAmount,
+        }).eq('id', referrerWallet.id);
+      }
+
+      const { data: referrerProfile } = await supabase
+        .from('profiles')
+        .select('currency')
+        .eq('id', referral.referrer_id)
+        .maybeSingle();
+
+      await supabase.from('transactions').insert({
+        user_id: referral.referrer_id,
+        type: 'referral_bonus',
+        amount: bonusAmount,
+        currency: referrerProfile?.currency || 'USD',
+        status: 'completed',
+        reference: bonusRef,
+        description: `10% referral bonus from ${profile?.currency || 'USD'} ${deposit.amount} deposit`,
+      });
+    }
+
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: 'Failed to approve deposit' });

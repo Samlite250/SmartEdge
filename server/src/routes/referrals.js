@@ -14,13 +14,13 @@ router.get('/', authenticate, async (req, res) => {
 
     const { data: referrals, error } = await supabase
       .from('referrals')
-      .select('*, referred:profiles!referred_id(full_name, email, created_at)')
+      .select('*, referred:profiles!referred_id(full_name, email, created_at, status)')
       .eq('referrer_id', req.user.id)
       .order('created_at', { ascending: false });
 
     if (error) return res.status(400).json({ error: error.message });
 
-    const totalBonus = referrals?.reduce((sum, r) => sum + Number(r.bonus), 0) || 0;
+    const totalBonus = referrals?.reduce((sum, r) => sum + Number(r.bonus || 0), 0) || 0;
 
     res.json({
       referralCode: profile?.referral_code,
@@ -30,6 +30,35 @@ router.get('/', authenticate, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch referrals' });
+  }
+});
+
+router.get('/team', authenticate, async (req, res) => {
+  try {
+    const { data: referrals, error } = await supabase
+      .from('referrals')
+      .select('*, referred:profiles!referred_id(id, full_name, email, created_at, status, country, currency)')
+      .eq('referrer_id', req.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    const team = referrals || [];
+    const totalBonus = team.reduce((sum, r) => sum + Number(r.bonus || 0), 0);
+    const activeCount = team.filter(r => r.referred?.status === 'active').length;
+    const paidCount = team.filter(r => r.status === 'paid').length;
+
+    res.json({
+      team,
+      stats: {
+        totalMembers: team.length,
+        activeMembers: activeCount,
+        paidBonuses: paidCount,
+        totalBonusEarned: totalBonus,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch team' });
   }
 });
 

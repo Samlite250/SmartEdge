@@ -15,18 +15,15 @@ export default function RegisterPage() {
   const [searchParams] = useSearchParams()
   const { login } = useAuth()
   const [form, setForm] = useState({
-    fullName: '', username: '', email: '', phone: '',
+    fullName: '', email: '', phone: '',
     country: '', referralCode: searchParams.get('ref') || '',
-    password: '', confirmPassword: '', acceptTerms: false,
+    password: '', acceptTerms: false,
   })
   const toast = useToast()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (form.password !== form.confirmPassword) {
-      return toast('Passwords do not match', 'error')
-    }
     if (!form.acceptTerms) {
       return toast('Please accept the terms and conditions', 'warning')
     }
@@ -79,11 +76,8 @@ export default function RegisterPage() {
           <h1 className="text-2xl font-bold text-text-primary mb-2">Create your account</h1>
           <p className="text-text-secondary mb-8">Start building your digital wealth</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Full Name" placeholder="John Doe" icon={User} value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} required />
-              <Input label="Username" placeholder="johndoe" icon={User} value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} required />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-4 border border-white/10 rounded-2xl p-6">
+            <Input label="Full Name" placeholder="John Doe" icon={User} value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} required />
             <Input label="Email" type="email" placeholder="you@example.com" icon={Mail} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
             <Input label="Phone Number" placeholder="+256 700 000 000" icon={Phone} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
 
@@ -92,7 +86,7 @@ export default function RegisterPage() {
               onChange={country => setForm({ ...form, country })}
             />
 
-            <Input label="Referral Code (Optional)" placeholder="Enter referral code" icon={Gift} value={form.referralCode} onChange={e => setForm({ ...form, referralCode: e.target.value })} />
+            <Input label="Referral Code (Optional)" placeholder="Enter referral code" icon={Gift} value={form.referralCode} onChange={e => setForm({ ...form, referralCode: e.target.value })} readOnly />
 
             <div className="relative">
               <Input
@@ -108,8 +102,6 @@ export default function RegisterPage() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-
-            <Input label="Confirm Password" type="password" placeholder="Repeat your password" icon={Lock} value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} required />
 
             <label className="flex items-start gap-2 text-sm text-text-secondary">
               <input type="checkbox" checked={form.acceptTerms} onChange={e => setForm({ ...form, acceptTerms: e.target.checked })} className="mt-0.5 rounded border-border text-primary focus:ring-primary" />

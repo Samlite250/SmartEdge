@@ -16,7 +16,7 @@ function getAuthClient() {
 
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, fullName, username, phone, country, referralCode } = req.body;
+    const { email, password, fullName, phone, country, referralCode } = req.body;
     // Validate required country
     if (!country) {
       return res.status(400).json({ error: 'Country is required' });
@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
       const { data: authData, error: authError } = await adminClient.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, username } },
+        options: { data: { full_name: fullName } },
       });
       if (authError) return res.status(400).json({ error: authError.message });
       userId = authData.user.id;
@@ -49,7 +49,7 @@ router.post('/register', async (req, res) => {
         email,
         password,
         email_confirm: true,
-        user_metadata: { full_name: fullName, username },
+        user_metadata: { full_name: fullName },
       });
       if (authError) return res.status(400).json({ error: authError.message });
       userId = authData.user.id;
@@ -69,7 +69,6 @@ router.post('/register', async (req, res) => {
         .from('profiles')
         .update({
           full_name: fullName,
-          username,
           phone,
           country: country,
           currency: userCurrency,
@@ -83,7 +82,6 @@ router.post('/register', async (req, res) => {
           id: userId,
           email,
           full_name: fullName,
-          username,
           phone,
           country: country,
           currency: userCurrency,

@@ -48,6 +48,7 @@ export const marketApi = {
 
 export const referralApi = {
   getAll: () => api.get('/referrals').then(r => r.data),
+  getTeam: () => api.get('/referrals/team').then(r => r.data),
 }
 
 export const announcementApi = {
